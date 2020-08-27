@@ -9,9 +9,7 @@
 import React from 'react';
 import { SafeAreaView, StyleSheet, ScrollView, View, Text, StatusBar } from 'react-native';
 
-import { Colors } from 'react-native/Libraries/NewAppScreen';
-import { AltitudeDisplay } from './components/AltitudeDisplay';
-import { MeasurementDisplay } from './components/MeasurementDisplay/MeasurementDisplay';
+import { MeasurementDisplay } from './components';
 
 const App = () => {
   return (
@@ -21,14 +19,34 @@ const App = () => {
         <ScrollView contentInsetAdjustmentBehavior="automatic" style={styles.scrollView}>
           <View style={styles.body}>
             <View style={styles.sectionContainer}>
-              <AltitudeDisplay />
+              <MeasurementDisplay
+                label="Wysokość"
+                measurement="altitude"
+                fontSize="big"
+                unit="m"
+                editable
+              />
+            </View>
+            <View style={styles.sectionContainer}>
+              <MeasurementDisplay
+                label="Ciśnienie na p. morza"
+                measurement="seaLevelPressure"
+                fontSize="medium"
+                unit="hPa"
+                editable
+              />
             </View>
             <View style={styles.sectionContainerFlex}>
-              <MeasurementDisplay label="Min. wysokość" measurement="minAlt" />
-              <MeasurementDisplay label="Maks. wysokość" measurement="maxAlt" />
-              <MeasurementDisplay label="Średnia wysokość" measurement="avgAlt" />
-              <MeasurementDisplay label="W górę" measurement="ascend" />
-              <MeasurementDisplay label="W dół" measurement="descend" />
+              <MeasurementDisplay label="Temperatura" measurement="temperature" unit="°C" />
+              <MeasurementDisplay label="Wilgotność" measurement="humidity" unit="%" />
+              <MeasurementDisplay label="Ciśnienie" measurement="pressure" unit="hPa" />
+            </View>
+            <View style={styles.sectionContainerFlex}>
+              <MeasurementDisplay label="Min. wysokość" measurement="minAlt" unit="m" />
+              <MeasurementDisplay label="Maks. wysokość" measurement="maxAlt" unit="m" />
+              <MeasurementDisplay label="Średnia wysokość" measurement="avgAlt" unit="m" />
+              <MeasurementDisplay label="W górę" measurement="ascend" unit="m" />
+              <MeasurementDisplay label="W dół" measurement="descend" unit="m" />
             </View>
           </View>
         </ScrollView>
@@ -56,6 +74,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
+    alignSelf: 'center',
   },
 });
 
