@@ -11,7 +11,15 @@
   },
   "dependencies": {
     "react": "16.13.1",
-    "react-native": "0.63.2"
+    "react-native": "0.63.2",
+    "react-redux": "^7.2.1",
+    "redux": "^4.0.5",
+    "redux-devtools-extension": "^2.13.8",
+    "redux-observable": "^1.2.0",
+    "reselect": "^4.0.0",
+    "rxjs": "^6.6.2",
+    "rxjs-compat": "^6.6.2",
+    "typesafe-actions": "^5.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.8.4",
@@ -20,6 +28,7 @@
     "@types/jest": "^26.0.10",
     "@types/react": "^16.9.46",
     "@types/react-native": "^0.63.9",
+    "@types/react-redux": "^7.1.9",
     "@types/react-test-renderer": "^16.9.3",
     "babel-jest": "^25.1.0",
     "eslint": "^6.5.1",

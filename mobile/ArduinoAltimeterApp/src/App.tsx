@@ -9,11 +9,16 @@
 import React from 'react';
 import { SafeAreaView, StyleSheet, ScrollView, View, Text, StatusBar } from 'react-native';
 
-import { MeasurementDisplay } from './components';
+import { MeasurementDisplay } from './containers';
+import { createAppStore } from './store/createStore';
+import { Provider } from 'react-redux';
+import { EmulatedService } from './services';
+
+const store = createAppStore({ bluetoothService: new EmulatedService() });
 
 const App = () => {
   return (
-    <>
+    <Provider store={store}>
       <StatusBar barStyle="dark-content" />
       <SafeAreaView>
         <ScrollView contentInsetAdjustmentBehavior="automatic" style={styles.scrollView}>
@@ -51,7 +56,7 @@ const App = () => {
           </View>
         </ScrollView>
       </SafeAreaView>
-    </>
+    </Provider>
   );
 };
 
