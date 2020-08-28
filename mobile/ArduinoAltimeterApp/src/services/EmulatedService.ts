@@ -1,35 +1,57 @@
 import { Measurement } from '../types';
 import {
   BluetoothService,
+  ConnectionStatus,
   MeasurementValues,
+  StatusSubscriptionHandler,
   MeasurementsSubscriptionHandler,
 } from './BluetoothService';
 import { getKeys } from '../utils';
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+type StatusSubscription = {
+  handler: StatusSubscriptionHandler;
+};
 type Subscription = {
   measurementsSet: Set<Measurement>;
   handler: MeasurementsSubscriptionHandler;
 };
 
+const initialMeasurements: { [key in Measurement]: number } = {
+  temperature: 23.1,
+  humidity: 32,
+  pressure: 933,
+  seaLevelPressure: 1023,
+  altitude: 300,
+  minAlt: 300,
+  maxAlt: 1836,
+  avgAlt: 801,
+  ascend: 1911,
+  descend: 1911,
+};
+
 export class EmulatedService implements BluetoothService {
+  private status: ConnectionStatus = 'DISCONNECTED';
+
   private measurements: { [key in Measurement]: number | null } = {
-    temperature: 23.1,
-    humidity: 32,
-    pressure: 933,
-    seaLevelPressure: 1023,
-    altitude: 300,
-    minAlt: 300,
-    maxAlt: 1836,
-    avgAlt: 801,
-    ascend: 1911,
-    descend: 1911,
+    temperature: null,
+    humidity: null,
+    pressure: null,
+    seaLevelPressure: null,
+    altitude: null,
+    minAlt: null,
+    maxAlt: null,
+    avgAlt: null,
+    ascend: null,
+    descend: null,
   };
+  private statusSubscriptions: StatusSubscription[] = [];
   private subscriptions: Subscription[] = [];
+  private notifyTimeout: NodeJS.Timeout | null = null;
 
   constructor() {
-    this.startSendingMeasurements();
+    setTimeout(() => this.setConnecting(), 1000);
   }
 
   get allMeasurements(): Measurement[] {
@@ -60,8 +82,44 @@ export class EmulatedService implements BluetoothService {
     setTimeout(() => this.notifyMeasurementsSubscriber(subscription!, this.measurements), 0);
   }
 
+  subscribeForStatus(handler: StatusSubscriptionHandler) {
+    let subscription = this.statusSubscriptions.find((s) => s.handler === handler);
+    if (!subscription) {
+      subscription = {
+        handler,
+      };
+      this.statusSubscriptions.push(subscription);
+    }
+    setTimeout(() => this.notifyStatusSubscriber(subscription!, this.status), 0);
+  }
+
+  private setConnecting() {
+    this.status = 'CONNECTING';
+    this.notifyStatusChange(this.status);
+    setTimeout(() => this.setConnected(), 3000);
+  }
+
+  private setConnected() {
+    this.status = 'CONNECTED';
+    this.notifyStatusChange(this.status);
+    this.measurements = { ...initialMeasurements };
+    this.startSendingMeasurements();
+    setTimeout(() => this.setDisconnected(), 15000);
+  }
+
+  private setDisconnected() {
+    this.status = 'DISCONNECTED';
+    this.notifyStatusChange(this.status);
+    if (this.notifyTimeout) {
+      clearTimeout(this.notifyTimeout);
+      this.notifyTimeout = null;
+    }
+    setTimeout(() => this.setConnecting(), 10000);
+  }
+
   private startSendingMeasurements() {
-    setInterval(() => {
+    this.notifyMeasurementsChange({ ...this.measurements });
+    this.notifyTimeout = setInterval(() => {
       this.allMeasurements.forEach((measurement) => {
         const oldValue = this.measurements[measurement];
         if (oldValue != null) {
@@ -70,6 +128,16 @@ export class EmulatedService implements BluetoothService {
       });
       this.notifyMeasurementsChange({ ...this.measurements });
     }, 3000);
+  }
+
+  private notifyStatusChange(status: ConnectionStatus) {
+    this.statusSubscriptions.forEach((subscription) => {
+      this.notifyStatusSubscriber(subscription, status);
+    });
+  }
+
+  private notifyStatusSubscriber(subscription: StatusSubscription, status: ConnectionStatus) {
+    subscription.handler(status);
   }
 
   private notifyMeasurementsChange(measurements: MeasurementValues) {

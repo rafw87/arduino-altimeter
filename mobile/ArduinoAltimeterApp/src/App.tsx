@@ -9,7 +9,7 @@
 import React from 'react';
 import { SafeAreaView, StyleSheet, ScrollView, View, Text, StatusBar } from 'react-native';
 
-import { MeasurementDisplay } from './containers';
+import { ConnectionStatusDisplay, MeasurementDisplay } from './containers';
 import { createAppStore } from './store/createStore';
 import { Provider } from 'react-redux';
 import { EmulatedService } from './services';
@@ -23,6 +23,7 @@ const App = () => {
       <SafeAreaView>
         <ScrollView contentInsetAdjustmentBehavior="automatic" style={styles.scrollView}>
           <View style={styles.body}>
+            <ConnectionStatusDisplay />
             <View style={styles.sectionContainer}>
               <MeasurementDisplay
                 label="Wysokość"
