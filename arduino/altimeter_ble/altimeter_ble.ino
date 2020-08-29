@@ -1,9 +1,13 @@
 #define BATTERY_LEVEL A7
 #define BATTERY_EMPTY_READING 310
 #define BATTERY_FULL_READING 615
-#define ALTITUDE_HISTERESIS 0.2f
+#define ALTITUDE_HISTERESIS 0.3f
 
-#include <ArduinoBLE.h>
+#define BLE_QUERY_INTERVAL 500
+#define DATA_ACQUISITION_INTERVAL 1000
+#define DATA_SEND_INTERVAL 3000
+
+#include "BLEAdapter.h"
 #include <Adafruit_BME280.h>
 
 struct BME280Measurements {
@@ -15,12 +19,9 @@ struct BME280Measurements {
 
 Adafruit_BME280 bme;
 
-BLEService batteryService("180F");
-//BLEService environmentalService("181A");
-BLEService altimeterService("470405e3-d3b7-42d4-a359-ef34241b55a1");
-BLEByteCharacteristic batteryLevelChar("2101", BLERead | BLENotify);
-BLEIntCharacteristic altitudeChar("2AB3", BLERead | BLEWrite | BLENotify);
+BLEAdapter ble;
 
+BME280Measurements bme280Measurements;
 short lastAltitude;
 short minAltitude;
 short maxAltitude;
@@ -33,6 +34,11 @@ int counter;
 float seaLevelPressure = 1013.25;
 unsigned bme280Status;
 
+unsigned long nextBLEQuery;
+unsigned long nextDataRetrieval;
+unsigned long nextDataSend;
+bool connected = false;
+
 void setup() {
   pinMode(BATTERY_LEVEL, INPUT);
   
@@ -43,81 +49,107 @@ void setup() {
   getBME280MeasurementsTwice(&bme280Measurements);
   resetMeasurements(bme280Measurements);
 
-  while (!BLE.begin()) {
-    Serial.println("starting BLE failed!");
-    delay(1000);
-  }
-  BLE.setLocalName("Arduino Altimeter");
-  BLE.setAdvertisedService(batteryService);
-  batteryService.addCharacteristic(batteryLevelChar);
-  BLE.addService(batteryService);
-  BLE.setAdvertisedService(altimeterService);
-  altitudeChar.setEventHandler(BLEWritten, updateAltitude);
-  altimeterService.addCharacteristic(altitudeChar);
-  BLE.addService(altimeterService);
-  BLE.advertise();
-  Serial.println("Bluetooth device active, waiting for connections...");
+  ble.altitude()->setEventHandler(BLEWritten, updateAltitude);
+  ble.seaLevelPressure()->setEventHandler(BLEWritten, updateSeaLevelPressure);
+
+  ble.init();
+  ble.seaLevelPressure()->writeValue(seaLevelPressure);
+
+  nextBLEQuery = millis() + BLE_QUERY_INTERVAL;
+  nextDataRetrieval = millis() + DATA_ACQUISITION_INTERVAL;
+  nextDataSend = millis() + DATA_SEND_INTERVAL;
 }
 
 void loop() {
-  BME280Measurements bme280Measurements;
-  getBME280MeasurementsTwice(&bme280Measurements);
-  calculateMeasurements(bme280Measurements);
-  float batteryLevel = getBatteryLevel();
+  if (millis() > nextBLEQuery) {
+    ble.connect();
 
-  Serial.print("Temperature: ");
-  Serial.println(bme280Measurements.temperature);
-  Serial.print("Humidity: ");
-  Serial.println(bme280Measurements.humidity);
-  Serial.print("Pressure: ");
-  Serial.println(bme280Measurements.pressure);
-  Serial.print("Sea level pressure: ");
-  Serial.println(seaLevelPressure);
-  Serial.print("Altitude (raw): ");
-  Serial.println(bme280Measurements.altitude);
-  Serial.print("Altitude (fixed): ");
-  Serial.println(lastAltitude);
-  Serial.print("Altitude (min): ");
-  Serial.println(minAltitude);
-  Serial.print("Altitude (max): ");
-  Serial.println(maxAltitude);
-  Serial.print("Altitude (avg): ");
-  Serial.println(avgAltitude);
-  Serial.print("Total ascend: ");
-  Serial.println(totalAscend);
-  Serial.print("Total descend: ");
-  Serial.println(totalDescend);
-  Serial.print("Battery level: ");
-  Serial.println(batteryLevel);
-  Serial.println();
-
-  
-  BLEDevice central = BLE.central();
-  if (central && central.connected()) {
-    batteryLevelChar.writeValue(round(batteryLevel));
-    altitudeChar.writeValue(lastAltitude * 100);
+    while(millis() > nextBLEQuery) nextBLEQuery += BLE_QUERY_INTERVAL;
   }
-  delay(500);
+  if (millis() > nextDataRetrieval) {
+    getBME280MeasurementsTwice(&bme280Measurements);
+    calculateMeasurements(bme280Measurements);
+    
+    while(millis() > nextDataRetrieval) nextDataRetrieval += DATA_ACQUISITION_INTERVAL;
+  }
+  if (millis() > nextDataSend) {
+    float batteryLevel = getBatteryLevel();
+    
+    Serial.print("Temperature: ");
+    Serial.println(bme280Measurements.temperature);
+    Serial.print("Humidity: ");
+    Serial.println(bme280Measurements.humidity);
+    Serial.print("Pressure: ");
+    Serial.println(bme280Measurements.pressure);
+    Serial.print("Sea level pressure: ");
+    Serial.println(seaLevelPressure);
+    Serial.print("Altitude (raw): ");
+    Serial.println(bme280Measurements.altitude);
+    Serial.print("Altitude (fixed): ");
+    Serial.println(lastAltitude);
+    Serial.print("Altitude (min): ");
+    Serial.println(minAltitude);
+    Serial.print("Altitude (max): ");
+    Serial.println(maxAltitude);
+    Serial.print("Altitude (avg): ");
+    Serial.println(avgAltitude);
+    Serial.print("Total ascend: ");
+    Serial.println(totalAscend);
+    Serial.print("Total descend: ");
+    Serial.println(totalDescend);
+    Serial.print("Battery level: ");
+    Serial.println(batteryLevel);
+    Serial.println();
+  
+    ble.temperature()->writeValue(bme280Measurements.temperature);
+    ble.humidity()->writeValue(bme280Measurements.humidity);
+    ble.pressure()->writeValue(bme280Measurements.pressure);
+    ble.altitude()->writeValue(bme280Measurements.altitude);
+    ble.minAltitude()->writeValue(minAltitude);
+    ble.maxAltitude()->writeValue(maxAltitude);
+    ble.avgAltitude()->writeValue(avgAltitude);
+    ble.totalAscend()->writeValue(totalAscend);
+    ble.totalDescend()->writeValue(totalDescend);
+
+    while(millis() > nextDataSend) nextDataSend += DATA_SEND_INTERVAL;
+  }
+
+  unsigned long nextEvent = min(nextBLEQuery, min(nextDataRetrieval, nextDataSend));
+  long delayTime = nextEvent - millis();
+  if(delayTime > 0) {
+    delay(delayTime);
+  }
 }
 
 
 void updateAltitude(BLEDevice central, BLECharacteristic characteristic) {
-  int value = altitudeChar.value();
-  short newAltitude = value / 100;
+  float value = ble.altitude()->value();
   Serial.print("Updated altitude, written: ");
-  Serial.print(value);
-  Serial.print(", altitude: ");
-  Serial.println(newAltitude);
-  seaLevelPressure = bme.seaLevelForAltitude(newAltitude, bme.readPressure() * 0.01f);
+  Serial.println(value);
+  seaLevelPressure = bme.seaLevelForAltitude(value, bme.readPressure() * 0.01f);
   BME280Measurements bme280Measurements;
   getBME280MeasurementsTwice(&bme280Measurements);
   updateMeasurements(bme280Measurements);
+  ble.altitude()->writeValue(lastAltitude);
+  ble.seaLevelPressure()->writeValue(seaLevelPressure);
+}
+
+void updateSeaLevelPressure(BLEDevice central, BLECharacteristic characteristic) {
+  float value = ble.seaLevelPressure()->value();
+  Serial.print("Updated sea level pressure, written: ");
+  Serial.println(value);
+  seaLevelPressure = value;
+  BME280Measurements bme280Measurements;
+  getBME280MeasurementsTwice(&bme280Measurements);
+  updateMeasurements(bme280Measurements);
+  ble.altitude()->writeValue(lastAltitude);
+  ble.seaLevelPressure()->writeValue(seaLevelPressure);
 }
 
 bool getBME280Measurements(BME280Measurements *measurements) {
   float temperature = bme.readTemperature();
   float humidity = bme.readHumidity();
-  float pressure = bme.readPressure();
+  float pressure = bme.readPressure() * 0.01f;
   float altitude = bme.readAltitude(seaLevelPressure);
   if(isnan(temperature) || isnan(humidity) || isnan(pressure) || isnan(altitude)) {
     measurements->temperature = 0;
