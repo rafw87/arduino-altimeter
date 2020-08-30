@@ -8,13 +8,13 @@
 
 import React from 'react';
 import { SafeAreaView, StyleSheet, ScrollView, View, Text, StatusBar } from 'react-native';
-
-import { ConnectionStatusDisplay, MeasurementDisplay } from './containers';
-import { createAppStore } from './store/createStore';
 import { Provider } from 'react-redux';
-import { EmulatedService } from './services';
+import { ConnectionStatusDisplay, MeasurementDisplay } from './containers';
+import { EmulatedBluetoothService } from './services';
+import { createAppStore } from './store/createStore';
+import { Measurement } from './types';
 
-const store = createAppStore({ bluetoothService: new EmulatedService() });
+const store = createAppStore({ bluetoothService: new EmulatedBluetoothService() });
 
 const App = () => {
   return (
@@ -27,7 +27,7 @@ const App = () => {
             <View style={styles.sectionContainer}>
               <MeasurementDisplay
                 label="Wysokość"
-                measurement="altitude"
+                measurement={Measurement.altitude}
                 fontSize="big"
                 unit="m"
                 editable
@@ -36,23 +36,35 @@ const App = () => {
             <View style={styles.sectionContainer}>
               <MeasurementDisplay
                 label="Ciśnienie na p. morza"
-                measurement="seaLevelPressure"
+                measurement={Measurement.seaLevelPressure}
                 fontSize="medium"
                 unit="hPa"
                 editable
               />
             </View>
             <View style={styles.sectionContainerFlex}>
-              <MeasurementDisplay label="Temperatura" measurement="temperature" unit="°C" />
-              <MeasurementDisplay label="Wilgotność" measurement="humidity" unit="%" />
-              <MeasurementDisplay label="Ciśnienie" measurement="pressure" unit="hPa" />
+              <MeasurementDisplay
+                label="Temperatura"
+                measurement={Measurement.temperature}
+                unit="°C"
+              />
+              <MeasurementDisplay label="Wilgotność" measurement={Measurement.humidity} unit="%" />
+              <MeasurementDisplay label="Ciśnienie" measurement={Measurement.pressure} unit="hPa" />
             </View>
             <View style={styles.sectionContainerFlex}>
-              <MeasurementDisplay label="Min. wysokość" measurement="minAlt" unit="m" />
-              <MeasurementDisplay label="Maks. wysokość" measurement="maxAlt" unit="m" />
-              <MeasurementDisplay label="Średnia wysokość" measurement="avgAlt" unit="m" />
-              <MeasurementDisplay label="W górę" measurement="ascend" unit="m" />
-              <MeasurementDisplay label="W dół" measurement="descend" unit="m" />
+              <MeasurementDisplay label="Min. wysokość" measurement={Measurement.minAlt} unit="m" />
+              <MeasurementDisplay
+                label="Maks. wysokość"
+                measurement={Measurement.maxAlt}
+                unit="m"
+              />
+              <MeasurementDisplay
+                label="Średnia wysokość"
+                measurement={Measurement.avgAlt}
+                unit="m"
+              />
+              <MeasurementDisplay label="W górę" measurement={Measurement.ascend} unit="m" />
+              <MeasurementDisplay label="W dół" measurement={Measurement.descend} unit="m" />
             </View>
           </View>
         </ScrollView>

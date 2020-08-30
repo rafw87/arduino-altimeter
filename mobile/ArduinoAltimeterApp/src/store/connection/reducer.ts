@@ -1,9 +1,9 @@
 import { ActionType, getType } from 'typesafe-actions';
 import * as actions from './actions';
-import { ConnectionReducer } from './types';
+import { ConnectionReducer, ConnectionStatus } from './types';
 
 export const connectionReducerInitialState: ConnectionReducer = {
-  status: 'DISCONNECTED',
+  status: ConnectionStatus.Disconnected,
 };
 
 export const connectionReducer = (

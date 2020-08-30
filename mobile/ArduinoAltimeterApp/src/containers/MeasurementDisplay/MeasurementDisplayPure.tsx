@@ -16,6 +16,7 @@ export type OwnProps = {
   fontSize?: FontSize;
   format?: (value: number) => string;
   unit?: string;
+  decimalPlaces?: number;
 };
 
 export type StateProps = {
@@ -94,6 +95,7 @@ export const MeasurementDisplayPure = (props: AllProps) => {
     setEditMode,
     saveMeasurement,
     updateDraft,
+    decimalPlaces = 0,
   } = props;
 
   const handleLongPress = useCallback(() => {
@@ -117,13 +119,16 @@ export const MeasurementDisplayPure = (props: AllProps) => {
     setEditMode({ measurement, editMode: false });
   }, [setEditMode, saveMeasurement, measurement, value]);
 
+  const formattedValueToDisplay = value != null ? value.toFixed(decimalPlaces) : '?';
+  const formattedValueToEdit = value != null ? value.toFixed(decimalPlaces) : '';
+
   const styles = useMemo(() => getStyles(fontSize), [fontSize]);
   if (!editable) {
     return (
       <View style={styles.root}>
         <Text style={styles.label}>{label}</Text>
         <View style={styles.valueContainer}>
-          <Text style={styles.value}>{value != null ? value : '?'}</Text>
+          <Text style={styles.value}>{formattedValueToDisplay}</Text>
           {unit && <Text style={styles.unit}>{unit}</Text>}
         </View>
       </View>
@@ -138,7 +143,7 @@ export const MeasurementDisplayPure = (props: AllProps) => {
             style={styles.editor}
             keyboardType="numeric"
             autoFocus
-            value={value?.toString() ?? ''}
+            value={formattedValueToEdit}
             onChangeText={handleChangeText}
             onBlur={handleBlur}
           />
@@ -152,7 +157,7 @@ export const MeasurementDisplayPure = (props: AllProps) => {
         <Text style={styles.label}>{label}</Text>
         <View style={styles.valueContainer}>
           <TouchableOpacity onLongPress={handleLongPress}>
-            <Text style={styles.value}>{value != null ? value : '?'}</Text>
+            <Text style={styles.value}>{formattedValueToDisplay}</Text>
           </TouchableOpacity>
           {unit && <Text style={styles.unit}>{unit}</Text>}
         </View>

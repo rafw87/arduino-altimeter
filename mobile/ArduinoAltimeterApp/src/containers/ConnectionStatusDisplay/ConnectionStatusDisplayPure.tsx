@@ -34,11 +34,11 @@ const styles = StyleSheet.create({
 
 const getStatusElement = (status: ConnectionStatus) => {
   switch (status) {
-    case 'DISCONNECTED':
+    case ConnectionStatus.Disconnected:
       return <Text style={styles.labelDisconnected}>Disconnected</Text>;
-    case 'CONNECTING':
+    case ConnectionStatus.Connecting:
       return <Text style={styles.labelConnecting}>Connecting...</Text>;
-    case 'CONNECTED':
+    case ConnectionStatus.Connected:
       return <Text style={styles.labelConnected}>Connected</Text>;
   }
 };
