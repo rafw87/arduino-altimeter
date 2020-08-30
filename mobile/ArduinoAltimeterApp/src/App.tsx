@@ -10,11 +10,11 @@ import React from 'react';
 import { SafeAreaView, StyleSheet, ScrollView, View, Text, StatusBar } from 'react-native';
 import { Provider } from 'react-redux';
 import { ConnectionStatusDisplay, MeasurementDisplay } from './containers';
-import { EmulatedBluetoothService } from './services';
+import { RealBluetoothService } from './services';
 import { createAppStore } from './store/createStore';
 import { Measurement } from './types';
 
-const store = createAppStore({ bluetoothService: new EmulatedBluetoothService() });
+const store = createAppStore({ bluetoothService: new RealBluetoothService() });
 
 const App = () => {
   return (

@@ -7,11 +7,14 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "rn:link": "react-native link"
   },
   "dependencies": {
+    "js-base64": "^3.4.5",
     "react": "16.13.1",
     "react-native": "0.63.2",
+    "react-native-ble-plx": "^2.0.1",
     "react-redux": "^7.2.1",
     "redux": "^4.0.5",
     "redux-devtools-extension": "^2.13.8",
