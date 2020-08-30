@@ -3,6 +3,7 @@
 #define BATTERY_FULL_READING 615
 #define ALTITUDE_HISTERESIS 0.2f
 
+#include <ArduinoBLE.h>
 #include <Adafruit_BME280.h>
 
 struct BME280Measurements {
@@ -13,6 +14,12 @@ struct BME280Measurements {
 };
 
 Adafruit_BME280 bme;
+
+BLEService batteryService("180F");
+//BLEService environmentalService("181A");
+BLEService altimeterService("470405e3-d3b7-42d4-a359-ef34241b55a1");
+BLEByteCharacteristic batteryLevelChar("2101", BLERead | BLENotify);
+BLEIntCharacteristic altitudeChar("2AB3", BLERead | BLEWrite | BLENotify);
 
 short lastAltitude;
 short minAltitude;
@@ -35,6 +42,21 @@ void setup() {
   BME280Measurements bme280Measurements;
   getBME280MeasurementsTwice(&bme280Measurements);
   resetMeasurements(bme280Measurements);
+
+  while (!BLE.begin()) {
+    Serial.println("starting BLE failed!");
+    delay(1000);
+  }
+  BLE.setLocalName("Arduino Altimeter");
+  BLE.setAdvertisedService(batteryService);
+  batteryService.addCharacteristic(batteryLevelChar);
+  BLE.addService(batteryService);
+  BLE.setAdvertisedService(altimeterService);
+  altitudeChar.setEventHandler(BLEWritten, updateAltitude);
+  altimeterService.addCharacteristic(altitudeChar);
+  BLE.addService(altimeterService);
+  BLE.advertise();
+  Serial.println("Bluetooth device active, waiting for connections...");
 }
 
 void loop() {
@@ -68,9 +90,29 @@ void loop() {
   Serial.print("Battery level: ");
   Serial.println(batteryLevel);
   Serial.println();
+
+  
+  BLEDevice central = BLE.central();
+  if (central && central.connected()) {
+    batteryLevelChar.writeValue(round(batteryLevel));
+    altitudeChar.writeValue(lastAltitude * 100);
+  }
   delay(500);
 }
 
+
+void updateAltitude(BLEDevice central, BLECharacteristic characteristic) {
+  int value = altitudeChar.value();
+  short newAltitude = value / 100;
+  Serial.print("Updated altitude, written: ");
+  Serial.print(value);
+  Serial.print(", altitude: ");
+  Serial.println(newAltitude);
+  seaLevelPressure = bme.seaLevelForAltitude(newAltitude, bme.readPressure() * 0.01f);
+  BME280Measurements bme280Measurements;
+  getBME280MeasurementsTwice(&bme280Measurements);
+  updateMeasurements(bme280Measurements);
+}
 
 bool getBME280Measurements(BME280Measurements *measurements) {
   float temperature = bme.readTemperature();
