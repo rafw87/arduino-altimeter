@@ -159,47 +159,23 @@ export class RealBluetoothService extends BluetoothServiceBase implements Blueto
 
   constructor() {
     super();
-    this.manager = new BleManager();
-    this.manager.setLogLevel(LogLevel.Verbose);
-    this.manager.startDeviceScan(
-      [ALTIMETER_SERVICE_UUID],
-      {},
-      (error: BleError | null, scannedDevice: Device | null) => {
-        if (error) {
-          return console.log(error);
-        }
-        if (scannedDevice) {
-          console.log('Device found:', scannedDevice?.name);
-          this.manager.stopDeviceScan();
-          this.connect(scannedDevice).catch(console.error);
+    this.manager = new BleManager({
+      restoreStateIdentifier: 'ArduinoAltimeter',
+      restoreStateFunction: (restoredState) => {
+        const restoredDevice = restoredState?.connectedPeripherals?.find((d) =>
+          d.serviceUUIDs?.includes(ALTIMETER_SERVICE_UUID),
+        );
+        if (restoredDevice) {
+          console.log('Device restored:', restoredDevice?.name);
+          this.connect(restoredDevice, true).catch(this.connectionErrorHandler);
+        } else {
+          console.log('Scanning for devices...');
+          this.startDeviceScan();
         }
       },
-    );
+    });
+    this.manager.setLogLevel(LogLevel.Verbose);
   }
-
-  private characteristicListener = (
-    error: BleError | null,
-    characteristic: Characteristic | null,
-  ) => {
-    if (error) {
-      return console.error('characteristic error', JSON.stringify(error));
-    }
-    try {
-      if (characteristic) {
-        const { serviceUUID, uuid, value } = characteristic;
-        console.log('received new characteristic update', serviceUUID, uuid, value);
-        // @ts-ignore
-        const measurementDefinition = SERVICES?.[serviceUUID]?.[uuid];
-        if (measurementDefinition && value) {
-          const parsedValue = decodeValue(value, measurementDefinition.specification);
-          this.updateMeasurements({ [measurementDefinition.measurement]: parsedValue });
-          console.log('measurement updated', measurementDefinition.measurement, parsedValue);
-        }
-      }
-    } catch (e) {
-      console.error(`Error during processing characteristic ${characteristic?.uuid}`, e);
-    }
-  };
 
   async writeMeasurementValue(measurement: Measurement, value: number) {
     const characteristic = MEASUREMENT_TO_CHARACTERISTIC[measurement];
@@ -218,19 +194,91 @@ export class RealBluetoothService extends BluetoothServiceBase implements Blueto
     return { measurement, value };
   }
 
-  private async connect(foundDevice: Device) {
+  private startDeviceScan() {
+    this.manager.startDeviceScan(
+      [ALTIMETER_SERVICE_UUID],
+      {},
+      (error: BleError | null, scannedDevice: Device | null) => {
+        if (error) {
+          return console.log(error);
+        }
+        if (scannedDevice) {
+          console.log('Device found:', scannedDevice?.name);
+          this.manager.stopDeviceScan();
+          this.connect(scannedDevice, false).catch(this.connectionErrorHandler);
+        }
+      },
+    );
+  }
+
+  private async connect(foundDevice: Device, restored: boolean) {
     this.setStatus(ConnectionStatus.Connecting);
+
     const connectedDevice = (this.device = await foundDevice.connect());
-    await connectedDevice.discoverAllServicesAndCharacteristics();
-    this.setStatus(ConnectionStatus.Connected);
+    if (!restored) {
+      console.log('Discovering services and characteristics...');
+      await connectedDevice.discoverAllServicesAndCharacteristics();
+    }
+    this.manager.onDeviceDisconnected(connectedDevice.id, this.disconnectHandler);
+
     getKeys(SERVICES).forEach((serviceUUID) => {
       getKeys(SERVICES[serviceUUID]).forEach((characteristicUUID) => {
-        connectedDevice.monitorCharacteristicForService(
+        foundDevice
+          .readCharacteristicForService(serviceUUID, characteristicUUID)
+          .then((characteristic) => {
+            this.processCharacteristicValue(characteristic);
+          });
+        foundDevice.monitorCharacteristicForService(
           serviceUUID,
           characteristicUUID,
           this.characteristicListener,
         );
       });
     });
+    this.setStatus(ConnectionStatus.Connected);
   }
+
+  private processCharacteristicValue(characteristic: Characteristic) {
+    const { serviceUUID, uuid, value } = characteristic;
+    // @ts-ignore
+    const measurementDefinition = SERVICES?.[serviceUUID]?.[uuid];
+    if (measurementDefinition && value) {
+      const parsedValue = decodeValue(value, measurementDefinition.specification);
+      this.updateMeasurements({ [measurementDefinition.measurement]: parsedValue });
+      console.log('measurement updated', measurementDefinition.measurement, parsedValue);
+    }
+  }
+
+  private characteristicListener = (
+    error: BleError | null,
+    characteristic: Characteristic | null,
+  ) => {
+    if (error) {
+      return console.error('characteristic error', JSON.stringify(error));
+    }
+    try {
+      if (characteristic) {
+        const { serviceUUID, uuid, value } = characteristic;
+        console.log('received new characteristic update', serviceUUID, uuid, value);
+        this.processCharacteristicValue(characteristic);
+      }
+    } catch (e) {
+      console.error(`Error during processing characteristic ${characteristic?.uuid}`, e);
+    }
+  };
+
+  private disconnectHandler = (err: BleError | null, device: Device | null) => {
+    if (err) {
+      console.error('Device disconnecting error', err);
+      return;
+    }
+    this.setStatus(ConnectionStatus.Disconnected);
+    console.log(`Device ${device} disconnected.`);
+    this.startDeviceScan();
+  };
+
+  private connectionErrorHandler = (error: Error) => {
+    console.error('Error during connecting to device', error);
+    this.startDeviceScan();
+  };
 }
