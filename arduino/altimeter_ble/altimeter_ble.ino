@@ -2,21 +2,13 @@
 #define BATTERY_EMPTY_READING 310
 #define BATTERY_FULL_READING 615
 
-#define BLE_QUERY_INTERVAL 500
-#define DATA_ACQUISITION_INTERVAL 1000
 #define DATA_SEND_INTERVAL 3000
 
 #include "BLEAdapter.h"
 #include "Measurements.h"
 
 Measurements measurements;
-
 BLEAdapter ble;
-
-unsigned long nextBLEQuery;
-unsigned long nextDataRetrieval;
-unsigned long nextDataSend;
-bool connected = false;
 
 void setup() {
   pinMode(BATTERY_LEVEL, INPUT);
@@ -32,82 +24,63 @@ void setup() {
 
   ble.init();
   ble.seaLevelPressure()->writeValue(measurements.getSeaLevelPressure());
-
-  nextBLEQuery = millis() + BLE_QUERY_INTERVAL;
-  nextDataRetrieval = millis() + DATA_ACQUISITION_INTERVAL;
-  nextDataSend = millis() + DATA_SEND_INTERVAL;
 }
 
 void loop() {
-  if (millis() > nextBLEQuery) {
-    ble.connect();
-
-    while(millis() > nextBLEQuery) nextBLEQuery += BLE_QUERY_INTERVAL;
-  }
-  if (millis() > nextDataRetrieval) {
-    measurements.update();
-    
-    while(millis() > nextDataRetrieval) nextDataRetrieval += DATA_ACQUISITION_INTERVAL;
-  }
-  if (millis() > nextDataSend) {
-    float temperature = measurements.getTemperature();
-    float humidity = measurements.getHumidity();
-    float pressure = measurements.getPressure();
-    float rawAltitude = measurements.getRawAltitude();
-    float altitude = measurements.getAltitude();
-    float minAltitude = measurements.getMinAltitude();
-    float maxAltitude = measurements.getMaxAltitude();
-    float avgAltitude = measurements.getAvgAltitude();
-    float totalAscend = measurements.getTotalAscend();
-    float totalDescend = measurements.getTotalDescend();
-    float seaLevelPressure = measurements.getSeaLevelPressure();
-    float batteryLevel = getBatteryLevel();
-    
-    Serial.print("Temperature: ");
-    Serial.println(temperature);
-    Serial.print("Humidity: ");
-    Serial.println(humidity);
-    Serial.print("Pressure: ");
-    Serial.println(pressure);
-    Serial.print("Sea level pressure: ");
-    Serial.println(seaLevelPressure);
-    Serial.print("Altitude (raw): ");
-    Serial.println(rawAltitude);
-    Serial.print("Altitude (fixed): ");
-    Serial.println(altitude);
-    Serial.print("Altitude (min): ");
-    Serial.println(minAltitude);
-    Serial.print("Altitude (max): ");
-    Serial.println(maxAltitude);
-    Serial.print("Altitude (avg): ");
-    Serial.println(avgAltitude);
-    Serial.print("Total ascend: ");
-    Serial.println(totalAscend);
-    Serial.print("Total descend: ");
-    Serial.println(totalDescend);
-    Serial.print("Battery level: ");
-    Serial.println(batteryLevel);
-    Serial.println();
+  measurements.update();
   
-    ble.temperature()->writeValue(temperature);
-    ble.humidity()->writeValue(humidity);
-    ble.pressure()->writeValue(pressure);
-    ble.elevation()->writeValue(rawAltitude);
-    ble.altitude()->writeValue(altitude);
-    ble.minAltitude()->writeValue(minAltitude);
-    ble.maxAltitude()->writeValue(maxAltitude);
-    ble.avgAltitude()->writeValue(avgAltitude);
-    ble.totalAscend()->writeValue(totalAscend);
-    ble.totalDescend()->writeValue(totalDescend);
-    ble.seaLevelPressure()->writeValue(seaLevelPressure);
-    while(millis() > nextDataSend) nextDataSend += DATA_SEND_INTERVAL;
-  }
+  float temperature = measurements.getTemperature();
+  float humidity = measurements.getHumidity();
+  float pressure = measurements.getPressure();
+  float rawAltitude = measurements.getRawAltitude();
+  float altitude = measurements.getAltitude();
+  float minAltitude = measurements.getMinAltitude();
+  float maxAltitude = measurements.getMaxAltitude();
+  float avgAltitude = measurements.getAvgAltitude();
+  float totalAscend = measurements.getTotalAscend();
+  float totalDescend = measurements.getTotalDescend();
+  float seaLevelPressure = measurements.getSeaLevelPressure();
+  float batteryLevel = getBatteryLevel();
+  
+  Serial.print("Temperature: ");
+  Serial.println(temperature);
+  Serial.print("Humidity: ");
+  Serial.println(humidity);
+  Serial.print("Pressure: ");
+  Serial.println(pressure);
+  Serial.print("Sea level pressure: ");
+  Serial.println(seaLevelPressure);
+  Serial.print("Altitude (raw): ");
+  Serial.println(rawAltitude);
+  Serial.print("Altitude (fixed): ");
+  Serial.println(altitude);
+  Serial.print("Altitude (min): ");
+  Serial.println(minAltitude);
+  Serial.print("Altitude (max): ");
+  Serial.println(maxAltitude);
+  Serial.print("Altitude (avg): ");
+  Serial.println(avgAltitude);
+  Serial.print("Total ascend: ");
+  Serial.println(totalAscend);
+  Serial.print("Total descend: ");
+  Serial.println(totalDescend);
+  Serial.print("Battery level: ");
+  Serial.println(batteryLevel);
+  Serial.println();
 
-  unsigned long nextEvent = min(nextBLEQuery, min(nextDataRetrieval, nextDataSend));
-  long delayTime = nextEvent - millis();
-  if(delayTime > 0) {
-    delay(delayTime);
-  }
+  ble.temperature()->writeValue(temperature);
+  ble.humidity()->writeValue(humidity);
+  ble.pressure()->writeValue(pressure);
+  ble.elevation()->writeValue(rawAltitude);
+  ble.altitude()->writeValue(altitude);
+  ble.minAltitude()->writeValue(minAltitude);
+  ble.maxAltitude()->writeValue(maxAltitude);
+  ble.avgAltitude()->writeValue(avgAltitude);
+  ble.totalAscend()->writeValue(totalAscend);
+  ble.totalDescend()->writeValue(totalDescend);
+  ble.seaLevelPressure()->writeValue(seaLevelPressure);
+
+  ble.poll(DATA_SEND_INTERVAL);
 }
 
 

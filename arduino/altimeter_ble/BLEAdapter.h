@@ -51,7 +51,7 @@ class BLEAdapter {
     TotalAscendCharacteristic* totalAscend();
     TotalDescendCharacteristic* totalDescend();
     void init();
-    void connect();
+    void poll(unsigned long timeout);
     void sync();
 
   private:
@@ -134,6 +134,18 @@ void BLEAdapter::init() {
     Serial.println("starting BLE failed!");
     delay(1000);
   }
+
+  BLE.setEventHandler(BLEConnected, [](BLEDevice central) {
+    Serial.print("Connected to central: ");
+    Serial.println(central.address());
+  });
+  BLE.setEventHandler(BLEDisconnected, [](BLEDevice central) {
+    Serial.print("Disconnected from central: ");
+    Serial.println(central.address());
+    BLE.disconnect();
+    BLE.advertise();
+  });
+  
   BLE.setLocalName("Arduino Altimeter");
 
   BLEService environmentalService("181A");
@@ -159,21 +171,8 @@ void BLEAdapter::init() {
   Serial.println("Bluetooth device active, waiting for connections...");
 }
 
-void BLEAdapter::connect() {
-  BLEDevice central = BLE.central();
-  if(central && central.connected()) {
-    if(!isConnected) {
-      Serial.print("Connected to central: ");
-      Serial.println(central.address());
-      sync();
-    }
-    isConnected = true;
-  } else {
-    if(isConnected) {
-      Serial.print("Disconnected from central: ");
-    }
-    isConnected = false;
-  }
+void BLEAdapter::poll(unsigned long timeout) {
+  BLE.poll(timeout);
 }
 
 void BLEAdapter::sync() {
