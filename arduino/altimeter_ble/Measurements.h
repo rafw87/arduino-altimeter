@@ -1,6 +1,9 @@
 #ifndef _MEASUREMENTS_H_
 #define _MEASUREMENTS_H_
 
+#define BATTERY_LEVEL A7
+#define BATTERY_EMPTY_READING 570
+#define BATTERY_FULL_READING 770
 #define ALTITUDE_HISTERESIS 0.3f
 
 #include "SensorAdapter.h"
@@ -9,6 +12,9 @@ class Measurements {
   public:
     void init();
     void update();
+    uint8_t getBatteryLevel(void);
+    uint16_t getBatteryReading(void);
+    uint16_t getMinBatteryReading(void);
     float getTemperature(void);
     float getHumidity(void);
     float getPressure(void);
@@ -24,6 +30,7 @@ class Measurements {
     void setSeaLevelPressure(float seaLevelPressure);
   private:
     SensorAdapter sensor;
+    uint16_t minBatteryReading = 0xffff;
     float altitude;
     float minAltitude;
     float maxAltitude;
@@ -56,6 +63,21 @@ void Measurements::update() {
   totalDescend = totalDescend + max(0, altitude - newAltitude);
   altitude = newAltitude;
   recalculateMinMaxAvg();
+}
+
+uint8_t Measurements::getBatteryLevel() {
+  uint16_t batteryReading = getBatteryReading();
+  return (uint8_t)constrain(map(batteryReading, BATTERY_EMPTY_READING, BATTERY_FULL_READING, 0, 100), 0, 100);
+}
+
+uint16_t Measurements::getBatteryReading() {
+  uint16_t batteryReading = (uint16_t)analogRead(BATTERY_LEVEL);
+  minBatteryReading = min(batteryReading, minBatteryReading);
+  return batteryReading;
+}
+
+uint16_t Measurements::getMinBatteryReading() {
+  return minBatteryReading;
 }
 
 float Measurements::getTemperature() {

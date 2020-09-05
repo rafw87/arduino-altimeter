@@ -1,6 +1,11 @@
 #ifndef _BLE_ADAPTER_H_
 #define _BLE_ADAPTER_H_
 
+#define BATTERY_SERVICE_UUID          "180F"
+#define BATTERY_LEVEL_CHAR            "2A19"
+#define BATTERY_READING_CHAR          "47f969cc-ed59-11ea-adc1-0242ac120002"
+#define MIN_BATTERY_READING_CHAR   "47f96c24-ed59-11ea-adc1-0242ac120002"
+
 #define ALTIMETER_SERVICE_UUID        "7f7f23fe-e981-11ea-adc1-0242ac120002"
 #define ALTITUDE_CHAR_UUID            "7f7f2638-e981-11ea-adc1-0242ac120002"
 #define SEA_LEVEL_PRESS_CHAR_UUID     "7f7f2728-e981-11ea-adc1-0242ac120002"
@@ -22,6 +27,8 @@
 #include <ArduinoBLE.h>
 #include "BLENumericCharacteristic.h"
 
+using BatteryLevelCharacteristic = BLENumericCharacteristic<uint8_t>;
+using BatteryReadingCharacteristic = BLENumericCharacteristic<uint16_t>;
 using TemperatureCharacteristic = BLENumericCharacteristic<int16_t>;
 using HumidityCharacteristic = BLENumericCharacteristic<uint16_t>;
 using PressureCharacteristic = BLENumericCharacteristic<uint32_t>;
@@ -39,6 +46,9 @@ class BLEAdapter {
   public:
     BLEAdapter();
 
+    BatteryLevelCharacteristic* batteryLevel();
+    BatteryReadingCharacteristic* batteryReading();
+    BatteryReadingCharacteristic* minBatteryReading();
     TemperatureCharacteristic* temperature();
     HumidityCharacteristic* humidity();
     PressureCharacteristic* pressure();
@@ -56,6 +66,9 @@ class BLEAdapter {
 
   private:
     bool isConnected = false;
+    BatteryLevelCharacteristic batteryLevelChar;
+    BatteryReadingCharacteristic batteryReadingChar;
+    BatteryReadingCharacteristic minBatteryReadingChar;
     TemperatureCharacteristic temperatureChar;
     HumidityCharacteristic humidityChar;
     PressureCharacteristic pressureChar;
@@ -70,7 +83,10 @@ class BLEAdapter {
 };
 
 BLEAdapter::BLEAdapter()
-  : temperatureChar("2A1F", BLERead | BLENotify, 1, -2, 0)
+  : batteryLevelChar(BATTERY_LEVEL_CHAR, BLERead | BLENotify, 1, 0, 0)
+  , batteryReadingChar(BATTERY_READING_CHAR, BLERead | BLENotify, 1, 0, 0)
+  , minBatteryReadingChar(MIN_BATTERY_READING_CHAR, BLERead | BLENotify, 1, 0, 0)
+  , temperatureChar("2A1F", BLERead | BLENotify, 1, -2, 0)
   , humidityChar("2A6F", BLERead | BLENotify, 1, -2, 0)
   , pressureChar("2A6D", BLERead | BLENotify, 1, -1, 0)
   , elevationChar("2A6C", BLERead | BLENotify, 1, -2, 0)
@@ -82,6 +98,21 @@ BLEAdapter::BLEAdapter()
   , totalAscendChar(TOTAL_ASCEND_CHAR_UUID, BLERead | BLENotify, 1, -2, 0)
   , totalDescendChar(TOTAL_DESCEND_CHAR_UUID, BLERead | BLENotify, 1, -2, 0)
 {
+}
+
+BatteryLevelCharacteristic* BLEAdapter::batteryLevel()
+{
+  return &batteryLevelChar;
+}
+
+BatteryReadingCharacteristic* BLEAdapter::batteryReading()
+{
+  return &batteryReadingChar;
+}
+
+BatteryReadingCharacteristic* BLEAdapter::minBatteryReading()
+{
+  return &minBatteryReadingChar;
 }
 
 TemperatureCharacteristic* BLEAdapter::temperature()
@@ -148,6 +179,13 @@ void BLEAdapter::init() {
   
   BLE.setLocalName("Arduino Altimeter");
 
+  BLEService batteryService(BATTERY_SERVICE_UUID);
+  BLE.setAdvertisedService(batteryService);
+  batteryService.addCharacteristic(batteryLevelChar);
+  batteryService.addCharacteristic(batteryReadingChar);
+  batteryService.addCharacteristic(minBatteryReadingChar);
+  BLE.addService(batteryService);
+
   BLEService environmentalService("181A");
   BLE.setAdvertisedService(environmentalService);
   environmentalService.addCharacteristic(temperatureChar);
@@ -177,6 +215,9 @@ void BLEAdapter::poll(unsigned long timeout) {
 
 void BLEAdapter::sync() {
   if(BLE.connected()) {
+    batteryLevelChar.writeValue();
+    batteryReadingChar.writeValue();
+    minBatteryReadingChar.writeValue();
     temperatureChar.writeValue();
     humidityChar.writeValue();
     pressureChar.writeValue();

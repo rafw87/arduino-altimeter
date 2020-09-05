@@ -40,7 +40,9 @@ void loop() {
   float totalAscend = measurements.getTotalAscend();
   float totalDescend = measurements.getTotalDescend();
   float seaLevelPressure = measurements.getSeaLevelPressure();
-  float batteryLevel = getBatteryLevel();
+  uint8_t batteryLevel = measurements.getBatteryLevel();
+  uint16_t batteryReading = measurements.getBatteryReading();
+  uint16_t minBatteryReading = measurements.getMinBatteryReading();
   
   Serial.print("Temperature: ");
   Serial.println(temperature);
@@ -66,8 +68,15 @@ void loop() {
   Serial.println(totalDescend);
   Serial.print("Battery level: ");
   Serial.println(batteryLevel);
+  Serial.print("Battery reading: ");
+  Serial.println(batteryReading);
+  Serial.print("Battery reading (min): ");
+  Serial.println(minBatteryReading);
   Serial.println();
 
+  ble.batteryLevel()->writeValue(batteryLevel);
+  ble.batteryReading()->writeValue(batteryReading);
+  ble.minBatteryReading()->writeValue(minBatteryReading);
   ble.temperature()->writeValue(temperature);
   ble.humidity()->writeValue(humidity);
   ble.pressure()->writeValue(pressure);
@@ -100,10 +109,4 @@ void updateSeaLevelPressure(BLEDevice central, BLECharacteristic characteristic)
   measurements.setSeaLevelPressure(value);
   ble.altitude()->writeValue(measurements.getAltitude());
   ble.seaLevelPressure()->writeValue(measurements.getSeaLevelPressure());
-}
-
-
-float getBatteryLevel() {
-  float batteryRaw = analogRead(BATTERY_LEVEL);
-  return constrain(map(batteryRaw, BATTERY_EMPTY_READING, BATTERY_FULL_READING, 0, 100), 0, 100);
 }
