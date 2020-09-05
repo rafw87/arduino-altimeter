@@ -4,8 +4,10 @@ BLEAdapter::BLEAdapter()
         : batteryLevelChar(BATTERY_LEVEL_CHAR, BLERead | BLENotify, 1, 0, 0),
           batteryReadingChar(BATTERY_READING_CHAR, BLERead | BLENotify, 1, 0, 0),
           minBatteryReadingChar(MIN_BATTERY_READING_CHAR, BLERead | BLENotify, 1, 0, 0),
-          temperatureChar("2A1F", BLERead | BLENotify, 1, -2, 0), humidityChar("2A6F", BLERead | BLENotify, 1, -2, 0),
-          pressureChar("2A6D", BLERead | BLENotify, 1, -1, 0), elevationChar("2A6C", BLERead | BLENotify, 1, -2, 0),
+          temperatureChar(TEMPERATURE_CHAR, BLERead | BLENotify, 1, -2, 0),
+          humidityChar(HUMIDITY_CHAR, BLERead | BLENotify, 1, -2, 0),
+          pressureChar(PRESSURE_CHAR, BLERead | BLENotify, 1, -1, 0),
+          elevationChar(ELEVATION_CHAR, BLERead | BLENotify, 1, -2, 0),
           seaLevelPressureChar(SEA_LEVEL_PRESS_CHAR_UUID, BLERead | BLEWrite | BLENotify, 1, -1, 0),
           altitudeChar(ALTITUDE_CHAR_UUID, BLERead | BLEWrite | BLENotify, 1, -2, 0),
           minAltitudeChar(MIN_ALTITUDE_CHAR_UUID, BLERead | BLENotify, 1, -2, 0),
@@ -97,7 +99,7 @@ void BLEAdapter::init() {
     batteryService.addCharacteristic(minBatteryReadingChar);
     BLE.addService(batteryService);
 
-    BLEService environmentalService("181A");
+    BLEService environmentalService(ENVIRONMENTAL_SERVICE_UUID);
     BLE.setAdvertisedService(environmentalService);
     environmentalService.addCharacteristic(temperatureChar);
     environmentalService.addCharacteristic(humidityChar);

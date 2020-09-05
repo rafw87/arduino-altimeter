@@ -29,17 +29,14 @@ void updateSeaLevelPressure(BLEDevice central, BLECharacteristic characteristic)
 }
 
 void setup() {
-    pinMode(BATTERY_LEVEL, INPUT);
-
     Serial.begin(115200);
 
-    delay(5000);
+    delay(100);
 
     measurements.init();
 
     ble.altitude()->setEventHandler(BLEWritten, updateAltitude);
     ble.seaLevelPressure()->setEventHandler(BLEWritten, updateSeaLevelPressure);
-
     ble.init();
     ble.seaLevelPressure()->writeValue(measurements.getSeaLevelPressure());
 }

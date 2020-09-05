@@ -1,6 +1,7 @@
 #include "Measurements.h"
 
 void Measurements::init() {
+    pinMode(BATTERY_LEVEL, INPUT);
     sensor.init();
     delay(300);
 
