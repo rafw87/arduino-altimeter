@@ -4,11 +4,29 @@
 
 #define DATA_SEND_INTERVAL 3000
 
-#include "BLEAdapter.h"
-#include "Measurements.h"
+#include <BLEAdapter.h>
+#include <Measurements.h>
 
 Measurements measurements;
 BLEAdapter ble;
+
+void updateAltitude(BLEDevice central, BLECharacteristic characteristic) {
+    float value = ble.altitude()->value();
+    Serial.print("Updated altitude, written: ");
+    Serial.println(value);
+    measurements.setAltitude(value);
+    ble.altitude()->writeValue(measurements.getAltitude());
+    ble.seaLevelPressure()->writeValue(measurements.getSeaLevelPressure());
+}
+
+void updateSeaLevelPressure(BLEDevice central, BLECharacteristic characteristic) {
+    float value = ble.seaLevelPressure()->value();
+    Serial.print("Updated sea level pressure, written: ");
+    Serial.println(value);
+    measurements.setSeaLevelPressure(value);
+    ble.altitude()->writeValue(measurements.getAltitude());
+    ble.seaLevelPressure()->writeValue(measurements.getSeaLevelPressure());
+}
 
 void setup() {
     pinMode(BATTERY_LEVEL, INPUT);
@@ -90,23 +108,4 @@ void loop() {
     ble.seaLevelPressure()->writeValue(seaLevelPressure);
 
     ble.poll(DATA_SEND_INTERVAL);
-}
-
-
-void updateAltitude(BLEDevice central, BLECharacteristic characteristic) {
-    float value = ble.altitude()->value();
-    Serial.print("Updated altitude, written: ");
-    Serial.println(value);
-    measurements.setAltitude(value);
-    ble.altitude()->writeValue(measurements.getAltitude());
-    ble.seaLevelPressure()->writeValue(measurements.getSeaLevelPressure());
-}
-
-void updateSeaLevelPressure(BLEDevice central, BLECharacteristic characteristic) {
-    float value = ble.seaLevelPressure()->value();
-    Serial.print("Updated sea level pressure, written: ");
-    Serial.println(value);
-    measurements.setSeaLevelPressure(value);
-    ble.altitude()->writeValue(measurements.getAltitude());
-    ble.seaLevelPressure()->writeValue(measurements.getSeaLevelPressure());
 }

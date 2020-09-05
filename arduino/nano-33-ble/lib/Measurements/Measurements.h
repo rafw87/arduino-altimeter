@@ -6,7 +6,7 @@
 #define BATTERY_FULL_READING 770
 #define ALTITUDE_HISTERESIS 0.3f
 
-#include "SensorAdapter.h"
+#include <SensorAdapter.h>
 
 class Measurements {
 public:
