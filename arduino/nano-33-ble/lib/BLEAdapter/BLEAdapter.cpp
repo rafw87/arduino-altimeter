@@ -87,6 +87,7 @@ void BLEAdapter::init() {
         Serial.print("Disconnected from central: ");
         Serial.println(central.address());
         BLE.disconnect();
+        BLE.stopAdvertise();
         BLE.advertise();
     });
 
@@ -123,7 +124,10 @@ void BLEAdapter::init() {
 }
 
 void BLEAdapter::poll(unsigned long timeout) {
-    BLE.poll(timeout);
+    unsigned long start = millis();
+    while(millis() < start + timeout) {
+        BLE.poll(timeout + start - millis());
+    }
 }
 
 void BLEAdapter::sync() {
