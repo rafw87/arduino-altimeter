@@ -1,7 +1,3 @@
-#define BATTERY_LEVEL A7
-#define BATTERY_EMPTY_READING 310
-#define BATTERY_FULL_READING 615
-
 #define DATA_SEND_INTERVAL 3000
 
 #include <BLEAdapter.h>

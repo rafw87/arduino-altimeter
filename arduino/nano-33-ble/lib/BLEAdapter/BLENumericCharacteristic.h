@@ -52,7 +52,8 @@ void BLENumericCharacteristic<T>::setValue(float value) {
 template<typename T>
 float BLENumericCharacteristic<T>::value() {
     T rawValue;
-    memcpy(&rawValue, (unsigned char *) BLECharacteristic::value(), min(BLECharacteristic::valueSize(), sizeof(T)));
+    memcpy(&rawValue, (unsigned char *) BLECharacteristic::value(),
+           min(BLECharacteristic::valueSize(), (int) sizeof(T)));
 
     return rawValue * multiplier * pow(10.0f, decimalExponent) / pow(2.0f, binaryExponent);
 }
