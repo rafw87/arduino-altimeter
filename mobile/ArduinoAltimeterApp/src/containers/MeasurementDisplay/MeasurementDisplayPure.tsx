@@ -21,6 +21,7 @@ export type OwnProps = {
 
 export type StateProps = {
   value: number | null;
+  draftValue: string | null;
   editMode: boolean;
 };
 
@@ -91,6 +92,7 @@ export const MeasurementDisplayPure = (props: AllProps) => {
     fontSize = 'small',
     unit,
     value,
+    draftValue,
     editMode,
     setEditMode,
     saveMeasurement,
@@ -98,28 +100,26 @@ export const MeasurementDisplayPure = (props: AllProps) => {
     decimalPlaces = 0,
   } = props;
 
+  const formattedValueToDisplay = value != null ? value.toFixed(decimalPlaces) : '?';
+
   const handleLongPress = useCallback(() => {
-    setEditMode({ measurement, editMode: true });
-  }, [setEditMode, measurement]);
+    setEditMode({ measurement, editMode: true, draftValue: formattedValueToDisplay });
+  }, [setEditMode, measurement, formattedValueToDisplay]);
 
   const handleChangeText = useCallback(
     (text: string) => {
-      const newValue = text !== '' ? parseInt(text) : null;
-      if (!Number.isNaN(newValue)) {
-        updateDraft({ measurement, value: newValue });
-      }
+      updateDraft({ measurement, value: text });
     },
     [updateDraft, measurement],
   );
 
   const handleBlur = useCallback(() => {
-    if (value != null) {
-      saveMeasurement({ measurement, value });
+    if (draftValue != null) {
+      saveMeasurement({ measurement, value: parseFloat(draftValue) });
     }
-    setEditMode({ measurement, editMode: false });
-  }, [setEditMode, saveMeasurement, measurement, value]);
+    setEditMode({ measurement, editMode: false, draftValue: null });
+  }, [setEditMode, saveMeasurement, measurement, draftValue]);
 
-  const formattedValueToDisplay = value != null ? value.toFixed(decimalPlaces) : '?';
   const formattedValueToEdit = value != null ? value.toFixed(decimalPlaces) : '';
 
   const styles = useMemo(() => getStyles(fontSize), [fontSize]);
@@ -143,7 +143,7 @@ export const MeasurementDisplayPure = (props: AllProps) => {
             style={styles.editor}
             keyboardType="numeric"
             autoFocus
-            value={formattedValueToEdit}
+            value={draftValue ?? ''}
             onChangeText={handleChangeText}
             onBlur={handleBlur}
           />

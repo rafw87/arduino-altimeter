@@ -8,6 +8,7 @@ import {
 import { AppState } from '../../store';
 import {
   saveMeasurementAction,
+  selectDraftMeasurementValueToDisplay,
   selectEditMode,
   selectMeasurementValueToDisplay,
   setMeasurementEditModeAction,
@@ -16,6 +17,7 @@ import {
 
 export const mapStateToProps = (state: AppState, props: OwnProps) => ({
   value: selectMeasurementValueToDisplay(props.measurement)(state),
+  draftValue: selectDraftMeasurementValueToDisplay(props.measurement)(state),
   editMode: selectEditMode(props.measurement)(state),
 });
 

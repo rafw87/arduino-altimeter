@@ -4,7 +4,7 @@ import { MeasurementValues } from './types';
 
 type UpdateMeasurementDraftValuePayload = {
   measurement: Measurement;
-  value: number | null;
+  value: string | null;
 };
 export const updateMeasurementDraftValueAction = createAction(
   '@MEASUREMENTS/UPDATE_MEASUREMENT_DRAFT_VALUE',
@@ -18,6 +18,7 @@ export const updateMeasurementsAction = createAction('@MEASUREMENTS/UPDATE_MEASU
 type SetMeasurementEditModePayload = {
   measurement: Measurement;
   editMode: boolean;
+  draftValue: string | null;
 };
 export const setMeasurementEditModeAction = createAction('@MEASUREMENTS/SET_MEASUREMENT_EDIT_MODE')<
   SetMeasurementEditModePayload

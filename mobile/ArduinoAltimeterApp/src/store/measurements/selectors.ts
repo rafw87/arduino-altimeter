@@ -23,7 +23,14 @@ export const selectMeasurementValueToDisplay = (measurement: Measurement) => (st
   const { draftValue, requestedValue, actualValue, editMode } = state.measurements.measurements[
     measurement
   ];
-  return editMode ? draftValue : requestedValue ?? actualValue;
+  return requestedValue ?? actualValue;
+};
+
+export const selectDraftMeasurementValueToDisplay = (measurement: Measurement) => (
+  state: AppState,
+) => {
+  const { draftValue, editMode } = state.measurements.measurements[measurement];
+  return editMode ? draftValue : null;
 };
 
 export const selectResetMeasurementsState = (state: AppState) => state.measurements.resetState;

@@ -7,7 +7,7 @@ export enum ResetState {
 }
 
 export type MeasurementState = {
-  draftValue: number | null;
+  draftValue: string | null;
   requestedValue: number | null;
   actualValue: number | null;
   saveInProgress: boolean;

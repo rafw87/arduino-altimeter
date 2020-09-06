@@ -73,9 +73,7 @@ export const measurementsReducer = (
       return updateMeasurement(state, action.payload.measurement, (current) => ({
         ...current,
         editMode: action.payload.editMode,
-        draftValue: action.payload.editMode
-          ? current.requestedValue ?? current.actualValue
-          : current.draftValue,
+        draftValue: action.payload.draftValue,
       }));
     case getType(updateMeasurementDraftValueAction):
       return updateMeasurement(state, action.payload.measurement, (current) => ({
@@ -94,6 +92,7 @@ export const measurementsReducer = (
       return updateMeasurement(state, action.payload.measurement, (current) => ({
         ...current,
         saveInProgress: false,
+        requestedValue: null,
         error: null,
       }));
     case getType(saveMeasurementAction.failure):
