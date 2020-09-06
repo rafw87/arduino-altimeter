@@ -7,6 +7,8 @@
 #define ALTITUDE_HISTERESIS 0.3f
 
 #include <SensorAdapter.h>
+#include <EEPROM.h>
+
 
 class Measurements {
 public:
@@ -46,8 +48,13 @@ public:
 
     void setSeaLevelPressure(float seaLevelPressure);
 
+    void save();
+
+    void load();
+
 private:
     SensorAdapter sensor;
+    EEPROM eeprom;
     uint16_t minBatteryReading = 0xffff;
     float altitude;
     float minAltitude;
@@ -55,7 +62,7 @@ private:
     float avgAltitude;
     float totalAscend;
     float totalDescend;
-    int counter;
+    uint32_t counter;
 
     float getFixedAltitude(float rawAltitude);
 

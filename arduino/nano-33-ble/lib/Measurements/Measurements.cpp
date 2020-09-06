@@ -1,8 +1,31 @@
 #include "Measurements.h"
 
+#define EEPROM_SIGNATURE 0x12345678
+#define EEPROM_VERSION 0x0002
+
+struct EEPROMHeader {
+    uint32_t signature;
+    uint16_t version;
+    uint16_t flags;
+};
+struct EEPROMData {
+    uint16_t minBatteryReading;
+    float minAltitude;
+    float maxAltitude;
+    float avgAltitude;
+    float totalAscend;
+    float totalDescend;
+    uint32_t counter;
+    float seaLevelPressure;
+};
+
 void Measurements::init() {
     pinMode(BATTERY_LEVEL, INPUT);
     sensor.init();
+    if (!eeprom.init()) {
+        Serial.print("Cannot initialize EEPROM: ");
+        Serial.println(eeprom.getLastResult());
+    }
     delay(300);
 
     float rawAltitude = sensor.getAltitude();
@@ -13,6 +36,7 @@ void Measurements::init() {
     totalAscend = 0;
     totalDescend = 0;
     counter = 1;
+    load();
 }
 
 void Measurements::update() {
@@ -22,6 +46,54 @@ void Measurements::update() {
     totalDescend = totalDescend + max(0, altitude - newAltitude);
     altitude = newAltitude;
     recalculateMinMaxAvg();
+    save();
+}
+
+void Measurements::save() {
+    EEPROMData data = {
+            minBatteryReading,
+            minAltitude,
+            maxAltitude,
+            avgAltitude,
+            totalAscend,
+            totalDescend,
+            counter,
+            getSeaLevelPressure()
+    };
+    eeprom.write(0x08, data);
+    if (eeprom.getLastResult() > 0) {
+        Serial.print("Cannot write to EEPROM: ");
+        Serial.println(eeprom.getLastResult());
+    }
+}
+
+void Measurements::load() {
+    EEPROMHeader header = eeprom.read<EEPROMHeader>(0x00);
+    if (header.signature == EEPROM_SIGNATURE && header.version == EEPROM_VERSION) {
+        Serial.println("EEPROM data found. Loading stored data...");
+        EEPROMData data = eeprom.read<EEPROMData>(0x08);
+        if (eeprom.getLastResult() > 0) {
+            Serial.print("Cannot read from EEPROM: ");
+            Serial.println(eeprom.getLastResult());
+        }
+        minBatteryReading = data.minBatteryReading;
+        minAltitude = data.minAltitude;
+        maxAltitude = data.maxAltitude;
+        avgAltitude = data.avgAltitude;
+        totalAscend = data.totalAscend;
+        totalDescend = data.totalDescend;
+        counter = data.counter;
+        setSeaLevelPressure(data.seaLevelPressure);
+    } else {
+        Serial.println("No EEPROM data found. Formatting EEPROM...");
+        EEPROMHeader newHeader = {EEPROM_SIGNATURE, EEPROM_VERSION, 0x0000};
+        eeprom.write(0x00, newHeader);
+        if (eeprom.getLastResult() > 0) {
+            Serial.print("Cannot write to EEPROM: ");
+            Serial.println(eeprom.getLastResult());
+        }
+        save();
+    }
 }
 
 uint8_t Measurements::getBatteryLevel() {
@@ -88,6 +160,7 @@ void Measurements::setAltitude(float newAltitude) {
     float rawAltitude = sensor.getAltitude();
     altitude = getFixedAltitude(rawAltitude);
     recalculateMinMaxAvg();
+    save();
 }
 
 void Measurements::setSeaLevelPressure(float newSeaLevelPressure) {
@@ -95,6 +168,7 @@ void Measurements::setSeaLevelPressure(float newSeaLevelPressure) {
     float rawAltitude = sensor.getAltitude();
     altitude = getFixedAltitude(rawAltitude);
     recalculateMinMaxAvg();
+    save();
 }
 
 float Measurements::getFixedAltitude(float rawAltitude) {
