@@ -35,11 +35,12 @@ const App = () => {
             </View>
             <View style={styles.sectionContainer}>
               <MeasurementDisplay
-                label="Ciśnienie na p. morza"
+                label="Ciśnienie na poziomie morza"
                 measurement={Measurement.seaLevelPressure}
                 fontSize="medium"
                 unit="hPa"
                 editable
+                decimalPlaces={2}
               />
             </View>
             <View style={styles.sectionContainerFlex}>
@@ -47,9 +48,20 @@ const App = () => {
                 label="Temperatura"
                 measurement={Measurement.temperature}
                 unit="°C"
+                decimalPlaces={1}
               />
-              <MeasurementDisplay label="Wilgotność" measurement={Measurement.humidity} unit="%" />
-              <MeasurementDisplay label="Ciśnienie" measurement={Measurement.pressure} unit="hPa" />
+              <MeasurementDisplay
+                label="Wilgotność"
+                measurement={Measurement.humidity}
+                unit="%"
+                decimalPlaces={1}
+              />
+              <MeasurementDisplay
+                label="Ciśnienie"
+                measurement={Measurement.pressure}
+                unit="hPa"
+                decimalPlaces={1}
+              />
             </View>
             <View style={styles.sectionContainerFlex}>
               <MeasurementDisplay label="Min. wysokość" measurement={Measurement.minAlt} unit="m" />
