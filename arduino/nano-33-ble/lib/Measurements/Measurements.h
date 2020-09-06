@@ -52,6 +52,8 @@ public:
 
     void load();
 
+    void reset();
+
 private:
     SensorAdapter sensor;
     EEPROM eeprom;

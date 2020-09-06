@@ -14,8 +14,8 @@
 #define AVG_ALTITUDE_CHAR_UUID        "7f7f2994-e981-11ea-adc1-0242ac120002"
 #define TOTAL_ASCEND_CHAR_UUID        "7f7f2a5c-e981-11ea-adc1-0242ac120002"
 #define TOTAL_DESCEND_CHAR_UUID       "7f7f2c1e-e981-11ea-adc1-0242ac120002"
+#define RESET_DATA_CHAR_UUID          "7f7f2cdc-e981-11ea-adc1-0242ac120002"
 // Future use:
-// 7f7f2cdc-e981-11ea-adc1-0242ac120002
 // 7f7f2da4-e981-11ea-adc1-0242ac120002
 // 7f7f2e62-e981-11ea-adc1-0242ac120002
 // 7f7f31b4-e981-11ea-adc1-0242ac120002

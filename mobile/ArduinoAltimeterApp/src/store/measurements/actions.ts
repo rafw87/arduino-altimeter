@@ -40,3 +40,17 @@ export const saveMeasurementAction = createAsyncAction(
   '@MEASUREMENTS/SAVE_MEASUREMENT_SUCCESS',
   '@MEASUREMENTS/SAVE_MEASUREMENT_FAILURE',
 )<SaveMeasurementRequestPayload, SaveMeasurementSuccessPayload, SaveMeasurementFailurePayload>();
+
+export const resetMeasurementsClickAction = createAction('@MEASUREMENTS/RESET_MEASUREMENTS_CLICK')<
+  undefined
+>();
+
+export const resetMeasurementsClickTimeoutAction = createAction(
+  '@MEASUREMENTS/RESET_MEASUREMENTS_CLICK_TIMEOUT',
+)<undefined>();
+
+export const resetMeasurementsAction = createAsyncAction(
+  '@MEASUREMENTS/RESET_MEASUREMENTS_REQUEST',
+  '@MEASUREMENTS/RESET_MEASUREMENTS_SUCCESS',
+  '@MEASUREMENTS/RESET_MEASUREMENTS_FAILURE',
+)<undefined, undefined, Error>();

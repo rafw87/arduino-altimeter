@@ -14,7 +14,8 @@ BLEAdapter::BLEAdapter()
           maxAltitudeChar(MAX_ALTITUDE_CHAR_UUID, BLERead | BLENotify, 1, -2, 0),
           avgAltitudeChar(AVG_ALTITUDE_CHAR_UUID, BLERead | BLENotify, 1, -2, 0),
           totalAscendChar(TOTAL_ASCEND_CHAR_UUID, BLERead | BLENotify, 1, -2, 0),
-          totalDescendChar(TOTAL_DESCEND_CHAR_UUID, BLERead | BLENotify, 1, -2, 0) {
+          totalDescendChar(TOTAL_DESCEND_CHAR_UUID, BLERead | BLENotify, 1, -2, 0),
+          resetDataChar(RESET_DATA_CHAR_UUID, BLEWrite) {
 }
 
 BatteryLevelCharacteristic *BLEAdapter::batteryLevel() {
@@ -73,6 +74,10 @@ TotalDescendCharacteristic *BLEAdapter::totalDescend() {
     return &totalDescendChar;
 }
 
+ResetDataCharacteristic *BLEAdapter::resetData() {
+    return &resetDataChar;
+}
+
 void BLEAdapter::init() {
     while (!BLE.begin()) {
         Serial.println("starting BLE failed!");
@@ -117,6 +122,7 @@ void BLEAdapter::init() {
     altimeterService.addCharacteristic(avgAltitudeChar);
     altimeterService.addCharacteristic(totalAscendChar);
     altimeterService.addCharacteristic(totalDescendChar);
+    altimeterService.addCharacteristic(resetDataChar);
     BLE.addService(altimeterService);
 
     BLE.advertise();

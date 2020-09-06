@@ -32,6 +32,11 @@ export class EmulatedBluetoothService extends BluetoothServiceBase implements Bl
     return { measurement, value };
   }
 
+  async resetMeasurements() {
+    await delay(10);
+    this.updateMeasurements({ ...initialMeasurements });
+  }
+
   private setConnecting() {
     this.setStatus(ConnectionStatus.Connecting);
     setTimeout(() => this.setConnected(), 3000);

@@ -47,6 +47,8 @@ export class MiBandBluetoothService extends BluetoothServiceBase implements Blue
     return { measurement, value };
   }
 
+  async resetMeasurements() {}
+
   private startDeviceScan() {
     this.manager.startDeviceScan([], {}, (error: BleError | null, scannedDevice: Device | null) => {
       if (error) {

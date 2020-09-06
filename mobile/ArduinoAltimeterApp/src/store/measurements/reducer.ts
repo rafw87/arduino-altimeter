@@ -7,6 +7,9 @@ import {
   setMeasurementEditModeAction,
   updateMeasurementsAction,
   updateMeasurementDraftValueAction,
+  resetMeasurementsClickAction,
+  resetMeasurementsClickTimeoutAction,
+  resetMeasurementsAction,
 } from './actions';
 import { getKeys } from '../../utils';
 
@@ -32,6 +35,9 @@ export const measurementsReducerInitialState: MeasurementsReducer = {
     ascend: { ...measurementInitialState },
     descend: { ...measurementInitialState },
   },
+  resetClicks: 0,
+  resetInProgress: false,
+  resetError: null,
 };
 
 const updateMeasurement = (
@@ -95,6 +101,36 @@ export const measurementsReducer = (
         saveInProgress: false,
         error: action.payload.error,
       }));
+    case getType(resetMeasurementsClickAction):
+      return {
+        ...state,
+        resetClicks: state.resetClicks + 1,
+        resetError: null,
+      };
+    case getType(resetMeasurementsClickTimeoutAction):
+      return {
+        ...state,
+        resetClicks: 0,
+      };
+    case getType(resetMeasurementsAction.request):
+      return {
+        ...state,
+        resetClicks: 0,
+        resetError: null,
+        resetInProgress: true,
+      };
+    case getType(resetMeasurementsAction.success):
+      return {
+        ...state,
+        resetError: null,
+        resetInProgress: false,
+      };
+    case getType(resetMeasurementsAction.failure):
+      return {
+        ...state,
+        resetError: action.payload,
+        resetInProgress: false,
+      };
     default:
       return state;
   }

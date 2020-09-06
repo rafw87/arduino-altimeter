@@ -9,7 +9,7 @@
 import React from 'react';
 import { SafeAreaView, StyleSheet, ScrollView, View, Text, StatusBar } from 'react-native';
 import { Provider } from 'react-redux';
-import { ConnectionStatusDisplay, MeasurementDisplay } from './containers';
+import { ConnectionStatusDisplay, MeasurementDisplay, ResetButton } from './containers';
 import { RealBluetoothService } from './services';
 import { createAppStore } from './store/createStore';
 import { Measurement } from './types';
@@ -66,6 +66,7 @@ const App = () => {
               <MeasurementDisplay label="W górę" measurement={Measurement.ascend} unit="m" />
               <MeasurementDisplay label="W dół" measurement={Measurement.descend} unit="m" />
             </View>
+            <ResetButton />
           </View>
         </ScrollView>
       </SafeAreaView>

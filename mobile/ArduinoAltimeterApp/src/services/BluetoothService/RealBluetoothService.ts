@@ -25,6 +25,7 @@ const MAX_ALTITUDE_CHAR_UUID = '7f7f28cc-e981-11ea-adc1-0242ac120002';
 const AVG_ALTITUDE_CHAR_UUID = '7f7f2994-e981-11ea-adc1-0242ac120002';
 const TOTAL_ASCEND_CHAR_UUID = '7f7f2a5c-e981-11ea-adc1-0242ac120002';
 const TOTAL_DESCEND_CHAR_UUID = '7f7f2c1e-e981-11ea-adc1-0242ac120002';
+const RESET_DATA_CHAR_UUID = '7f7f2cdc-e981-11ea-adc1-0242ac120002';
 
 const SERVICES = {
   [ENVIRONMENTAL_SERVICE_UUID]: {
@@ -192,6 +193,17 @@ export class RealBluetoothService extends BluetoothServiceBase implements Blueto
       encodeValue(value, specification),
     );
     return { measurement, value };
+  }
+
+  async resetMeasurements() {
+    if (!this.device) {
+      throw new Error(`Device is not connected.`);
+    }
+    await this.device.writeCharacteristicWithResponseForService(
+      ALTIMETER_SERVICE_UUID,
+      RESET_DATA_CHAR_UUID,
+      Base64.fromUint8Array(new Uint8Array([0])),
+    );
   }
 
   private startDeviceScan() {

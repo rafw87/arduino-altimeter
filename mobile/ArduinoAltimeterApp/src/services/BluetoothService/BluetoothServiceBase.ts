@@ -43,6 +43,8 @@ export abstract class BluetoothServiceBase implements BluetoothService {
     value: number,
   ): Promise<{ measurement: Measurement; value: number }>;
 
+  abstract resetMeasurements(): Promise<void>;
+
   subscribeForMeasurements(
     measurements: Measurement[],
     handler: MeasurementsSubscriptionHandler,

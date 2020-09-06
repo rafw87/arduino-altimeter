@@ -18,7 +18,7 @@ using MaxAltitudeCharacteristic = BLENumericCharacteristic<int32_t>;
 using AvgAltitudeCharacteristic = BLENumericCharacteristic<int32_t>;
 using TotalAscendCharacteristic = BLENumericCharacteristic<uint32_t>;
 using TotalDescendCharacteristic = BLENumericCharacteristic<uint32_t>;
-
+using ResetDataCharacteristic = BLEByteCharacteristic;
 
 class BLEAdapter {
 public:
@@ -52,6 +52,8 @@ public:
 
     TotalDescendCharacteristic *totalDescend();
 
+    ResetDataCharacteristic *resetData();
+
     void init();
 
     void poll(unsigned long timeout);
@@ -74,6 +76,7 @@ private:
     AvgAltitudeCharacteristic avgAltitudeChar;
     TotalAscendCharacteristic totalAscendChar;
     TotalDescendCharacteristic totalDescendChar;
+    ResetDataCharacteristic resetDataChar;
 };
 
 #endif

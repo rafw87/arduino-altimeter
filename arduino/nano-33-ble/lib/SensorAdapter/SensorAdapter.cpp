@@ -68,3 +68,7 @@ float SensorAdapter::getSeaLevelPressure() {
 void SensorAdapter::setSeaLevelPressure(float value) {
     seaLevelPressure = value;
 }
+
+void SensorAdapter::resetSeaLevelPressure() {
+    seaLevelPressure = DEFAULT_SEA_LEVEL_PRESSURE;
+}

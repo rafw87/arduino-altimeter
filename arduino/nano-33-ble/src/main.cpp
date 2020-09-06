@@ -6,40 +6,7 @@
 Measurements measurements;
 BLEAdapter ble;
 
-void updateAltitude(BLEDevice central, BLECharacteristic characteristic) {
-    float value = ble.altitude()->value();
-    Serial.print("Updated altitude, written: ");
-    Serial.println(value);
-    measurements.setAltitude(value);
-    ble.altitude()->writeValue(measurements.getAltitude());
-    ble.seaLevelPressure()->writeValue(measurements.getSeaLevelPressure());
-}
-
-void updateSeaLevelPressure(BLEDevice central, BLECharacteristic characteristic) {
-    float value = ble.seaLevelPressure()->value();
-    Serial.print("Updated sea level pressure, written: ");
-    Serial.println(value);
-    measurements.setSeaLevelPressure(value);
-    ble.altitude()->writeValue(measurements.getAltitude());
-    ble.seaLevelPressure()->writeValue(measurements.getSeaLevelPressure());
-}
-
-void setup() {
-    Serial.begin(115200);
-
-    delay(100);
-
-    measurements.init();
-
-    ble.altitude()->setEventHandler(BLEWritten, updateAltitude);
-    ble.seaLevelPressure()->setEventHandler(BLEWritten, updateSeaLevelPressure);
-    ble.init();
-    ble.seaLevelPressure()->writeValue(measurements.getSeaLevelPressure());
-}
-
-void loop() {
-    measurements.update();
-
+void writeAllMeasurements() {
     float temperature = measurements.getTemperature();
     float humidity = measurements.getHumidity();
     float pressure = measurements.getPressure();
@@ -99,6 +66,48 @@ void loop() {
     ble.totalAscend()->writeValue(totalAscend);
     ble.totalDescend()->writeValue(totalDescend);
     ble.seaLevelPressure()->writeValue(seaLevelPressure);
+}
 
+void updateAltitude(BLEDevice central, BLECharacteristic characteristic) {
+    float value = ble.altitude()->value();
+    Serial.print("Updated altitude, written: ");
+    Serial.println(value);
+    measurements.setAltitude(value);
+    ble.altitude()->writeValue(measurements.getAltitude());
+    ble.seaLevelPressure()->writeValue(measurements.getSeaLevelPressure());
+}
+
+void updateSeaLevelPressure(BLEDevice central, BLECharacteristic characteristic) {
+    float value = ble.seaLevelPressure()->value();
+    Serial.print("Updated sea level pressure, written: ");
+    Serial.println(value);
+    measurements.setSeaLevelPressure(value);
+    ble.altitude()->writeValue(measurements.getAltitude());
+    ble.seaLevelPressure()->writeValue(measurements.getSeaLevelPressure());
+}
+
+void resetData(BLEDevice central, BLECharacteristic characteristic) {
+    Serial.println("Data reset requested.");
+    measurements.reset();
+    writeAllMeasurements();
+}
+
+void setup() {
+    Serial.begin(115200);
+
+    delay(100);
+
+    measurements.init();
+
+    ble.altitude()->setEventHandler(BLEWritten, updateAltitude);
+    ble.seaLevelPressure()->setEventHandler(BLEWritten, updateSeaLevelPressure);
+    ble.resetData()->setEventHandler(BLEWritten, resetData);
+    ble.init();
+    ble.seaLevelPressure()->writeValue(measurements.getSeaLevelPressure());
+}
+
+void loop() {
+    measurements.update();
+    writeAllMeasurements();
     ble.poll(DATA_SEND_INTERVAL);
 }

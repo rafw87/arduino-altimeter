@@ -14,6 +14,7 @@ export interface BluetoothService {
     measurement: Measurement,
     value: number,
   ): Promise<{ measurement: Measurement; value: number }>;
+  resetMeasurements(): Promise<void>;
   subscribeForStatus(handler: StatusSubscriptionHandler): void;
   subscribeForMeasurements(
     measurements: Measurement | Measurement[] | 'all',

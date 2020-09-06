@@ -12,6 +12,9 @@ export type MeasurementsReducer = {
   measurements: {
     [key in Measurement]: MeasurementState;
   };
+  resetClicks: number;
+  resetInProgress: boolean;
+  resetError: Error | null;
 };
 
 export type { MeasurementValues } from '../../services';
