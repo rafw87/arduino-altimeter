@@ -7,6 +7,7 @@ import {
 } from './IBluetoothService';
 import { getKeys } from '../../utils';
 import { Measurement } from '../../types';
+import { throttle } from 'lodash';
 
 type StatusSubscription = {
   handler: StatusSubscriptionHandler;
@@ -31,6 +32,7 @@ export abstract class BluetoothServiceBase implements BluetoothService {
     ascend: null,
     descend: null,
   };
+  private changedMeasurements: Set<Measurement> = new Set<Measurement>();
   private statusSubscriptions: StatusSubscription[] = [];
   private measurementsubscriptions: MeasurementsSubscription[] = [];
 
@@ -69,11 +71,16 @@ export abstract class BluetoothServiceBase implements BluetoothService {
   }
 
   protected updateMeasurements(measurements: MeasurementValues) {
+    getKeys(measurements).forEach((measurement) => {
+      if (this.measurements[measurement] !== measurements[measurement]) {
+        this.changedMeasurements.add(measurement);
+      }
+    });
     this.measurements = {
       ...this.measurements,
       ...measurements,
     };
-    this.notifyMeasurementsChange(measurements);
+    this.notifyMeasurementsChangeThrottled();
   }
 
   subscribeForStatus(handler: StatusSubscriptionHandler) {
@@ -97,11 +104,22 @@ export abstract class BluetoothServiceBase implements BluetoothService {
     subscription.handler(status);
   }
 
-  private notifyMeasurementsChange(measurements: MeasurementValues) {
-    this.measurementsubscriptions.forEach((subscription) => {
-      this.notifyMeasurementsSubscriber(subscription, measurements);
-    });
+  private notifyMeasurementsChange() {
+    const measurements = getKeys(this.measurements).reduce((result, measurement) => {
+      if (this.changedMeasurements.has(measurement)) {
+        result[measurement] = this.measurements[measurement];
+      }
+      return result;
+    }, {} as MeasurementValues);
+    if (getKeys(measurements).length > 0) {
+      this.measurementsubscriptions.forEach((subscription) => {
+        this.notifyMeasurementsSubscriber(subscription, measurements);
+      });
+    }
+    this.changedMeasurements.clear();
   }
+
+  private notifyMeasurementsChangeThrottled = throttle(() => this.notifyMeasurementsChange(), 100);
 
   private notifyMeasurementsSubscriber(
     subscription: MeasurementsSubscription,
