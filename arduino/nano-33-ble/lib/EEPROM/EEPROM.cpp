@@ -50,6 +50,26 @@ int EEPROM::write(uint8_t address, uint8_t *data, uint8_t size) {
     return size;
 }
 
+int EEPROM::factoryReset() {
+    uint8_t address = 0;
+    while (address < MEMORY_SIZE) {
+        Wire.beginTransmission(EEPROM_ADDR);
+        Wire.write(address);
+        uint8_t buffer[PAGE_SIZE];
+        memset(buffer, 0xff, PAGE_SIZE);
+        Wire.write(buffer, PAGE_SIZE);
+        int r = Wire.endTransmission();
+        if (r) {
+            lastResult = r;
+            return lastResult;
+        }
+        delay(30);
+        address += PAGE_SIZE;
+    }
+    lastResult = 0;
+    return lastResult;
+}
+
 int EEPROM::getLastResult() const {
     return lastResult;
 }

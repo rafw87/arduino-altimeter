@@ -1,11 +1,15 @@
 #define DATA_SEND_INTERVAL 3000
+#define FACTORY_RESET_PIN 12
+#define FACTORY_RESET_DURATION 10000
 
 #include <Arduino.h>
 #include <BLEAdapter.h>
 #include <Measurements.h>
+#include <EEPROM.h>
 
 Measurements measurements;
 BLEAdapter ble;
+EEPROM eeprom;
 
 void writeAllMeasurements() {
     float temperature = measurements.getTemperature();
@@ -97,6 +101,8 @@ void resetData(BLEDevice, BLECharacteristic) {
 }
 
 void setup() {
+    pinMode(FACTORY_RESET_PIN, INPUT_PULLUP);
+    pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
 
     delay(100);
@@ -111,6 +117,25 @@ void setup() {
 }
 
 void loop() {
+    if(digitalRead(FACTORY_RESET_PIN) == LOW) {
+        unsigned long start = millis();
+        bool aborted = false;
+        while(millis() < start + FACTORY_RESET_DURATION) {
+            if(digitalRead(FACTORY_RESET_PIN) != LOW) {
+                aborted = true;
+                break;
+            }
+            ble.poll(100);
+        }
+        if(!aborted) {
+            eeprom.factoryReset();
+            Serial.println("Factory reset performed.");
+            digitalWrite(LED_BUILTIN, HIGH);
+            delay(100);
+            digitalWrite(LED_BUILTIN, LOW);
+            NVIC_SystemReset();
+        }
+    }
     measurements.update();
     writeAllMeasurements();
     ble.poll(DATA_SEND_INTERVAL);

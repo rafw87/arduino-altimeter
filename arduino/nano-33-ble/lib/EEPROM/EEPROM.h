@@ -2,6 +2,7 @@
 #ifndef NANO_33_BLE_EEPROM_24AA01_H
 #define NANO_33_BLE_EEPROM_24AA01_H
 
+#define MEMORY_SIZE 128
 #define PAGE_SIZE 8
 #define EEPROM_ADDR 0b1010000
 
@@ -20,6 +21,8 @@ public:
 
     template<typename T>
     int write(uint8_t address, const T &value);
+
+    int factoryReset();
 
     int getLastResult() const;
 
