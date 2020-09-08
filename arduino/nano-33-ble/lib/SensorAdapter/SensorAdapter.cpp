@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "SensorAdapter.h"
 
 void SensorAdapter::init() {
@@ -61,7 +62,7 @@ void SensorAdapter::setAltitude(float value) {
     seaLevelPressure = bme.seaLevelForAltitude(value, pressure);
 }
 
-float SensorAdapter::getSeaLevelPressure() {
+float SensorAdapter::getSeaLevelPressure() const {
     return seaLevelPressure;
 }
 

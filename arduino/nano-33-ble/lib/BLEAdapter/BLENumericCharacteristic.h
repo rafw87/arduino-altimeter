@@ -15,7 +15,7 @@ public:
 
     void setValue(float value);
 
-    float value(void);
+    float value();
 
 private:
     float currentValue;

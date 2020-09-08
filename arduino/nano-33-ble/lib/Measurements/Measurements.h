@@ -16,33 +16,33 @@ public:
 
     void update();
 
-    uint8_t getBatteryLevel(void);
+    uint8_t getBatteryLevel();
 
-    uint16_t getBatteryReading(void);
+    uint16_t getBatteryReading();
 
-    uint16_t getMinBatteryReading(void);
+    uint16_t getMinBatteryReading() const;
 
-    float getTemperature(void);
+    float getTemperature();
 
-    float getHumidity(void);
+    float getHumidity();
 
-    float getPressure(void);
+    float getPressure();
 
-    float getRawAltitude(void);
+    float getRawAltitude();
 
-    float getAltitude(void);
+    float getAltitude() const;
 
-    float getSeaLevelPressure(void);
+    float getSeaLevelPressure();
 
-    float getMinAltitude(void);
+    float getMinAltitude() const;
 
-    float getMaxAltitude(void);
+    float getMaxAltitude() const;
 
-    float getAvgAltitude(void);
+    float getAvgAltitude() const;
 
-    float getTotalAscend(void);
+    float getTotalAscend() const;
 
-    float getTotalDescend(void);
+    float getTotalDescend() const;
 
     void setAltitude(float altitude);
 
@@ -58,15 +58,15 @@ private:
     SensorAdapter sensor;
     EEPROM eeprom;
     uint16_t minBatteryReading = 0xffff;
-    float altitude;
-    float minAltitude;
-    float maxAltitude;
-    float avgAltitude;
-    float totalAscend;
-    float totalDescend;
-    uint32_t counter;
+    float altitude = 0;
+    float minAltitude = 0;
+    float maxAltitude = 0;
+    float avgAltitude = 0;
+    float totalAscend = 0;
+    float totalDescend = 0;
+    uint32_t counter = 0;
 
-    float getFixedAltitude(float rawAltitude);
+    float getFixedAltitude(float rawAltitude) const;
 
     void recalculateMinMaxAvg();
 };

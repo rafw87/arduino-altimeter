@@ -84,10 +84,12 @@ void BLEAdapter::init() {
         delay(1000);
     }
 
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
     BLE.setEventHandler(BLEConnected, [](BLEDevice central) {
         Serial.print("Connected to central: ");
         Serial.println(central.address());
     });
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
     BLE.setEventHandler(BLEDisconnected, [](BLEDevice central) {
         Serial.print("Disconnected from central: ");
         Serial.println(central.address());
@@ -131,26 +133,7 @@ void BLEAdapter::init() {
 
 void BLEAdapter::poll(unsigned long timeout) {
     unsigned long start = millis();
-    while(millis() < start + timeout) {
+    while (millis() < start + timeout) {
         BLE.poll(timeout + start - millis());
-    }
-}
-
-void BLEAdapter::sync() {
-    if (BLE.connected()) {
-        batteryLevelChar.writeValue();
-        batteryReadingChar.writeValue();
-        minBatteryReadingChar.writeValue();
-        temperatureChar.writeValue();
-        humidityChar.writeValue();
-        pressureChar.writeValue();
-        elevationChar.writeValue();
-        seaLevelPressureChar.writeValue();
-        altitudeChar.writeValue();
-        minAltitudeChar.writeValue();
-        maxAltitudeChar.writeValue();
-        avgAltitudeChar.writeValue();
-        totalAscendChar.writeValue();
-        totalDescendChar.writeValue();
     }
 }

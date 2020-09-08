@@ -3,21 +3,21 @@
 
 #include <Adafruit_BME280.h>
 
-#define DEFAULT_SEA_LEVEL_PRESSURE 1013.25f;
+#define DEFAULT_SEA_LEVEL_PRESSURE 1013.25f
 
 class SensorAdapter {
 public:
     void init();
 
-    float getTemperature(void);
+    float getTemperature();
 
-    float getHumidity(void);
+    float getHumidity();
 
-    float getPressure(void);
+    float getPressure();
 
-    float getAltitude(void);
+    float getAltitude();
 
-    float getSeaLevelPressure(void);
+    float getSeaLevelPressure() const;
 
     void setAltitude(float value);
 

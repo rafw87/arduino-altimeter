@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "Measurements.h"
 
 #define EEPROM_SIGNATURE 0x12345678
@@ -8,6 +9,7 @@ struct EEPROMHeader {
     uint16_t version;
     uint16_t flags;
 };
+
 struct EEPROMData {
     uint16_t minBatteryReading;
     float minAltitude;
@@ -110,12 +112,12 @@ uint8_t Measurements::getBatteryLevel() {
 }
 
 uint16_t Measurements::getBatteryReading() {
-    uint16_t batteryReading = (uint16_t) analogRead(BATTERY_LEVEL);
+    auto batteryReading = (uint16_t) analogRead(BATTERY_LEVEL);
     minBatteryReading = min(batteryReading, minBatteryReading);
     return batteryReading;
 }
 
-uint16_t Measurements::getMinBatteryReading() {
+uint16_t Measurements::getMinBatteryReading() const {
     return minBatteryReading;
 }
 
@@ -135,7 +137,7 @@ float Measurements::getRawAltitude() {
     return sensor.getAltitude();
 }
 
-float Measurements::getAltitude() {
+float Measurements::getAltitude() const {
     return altitude;
 }
 
@@ -143,23 +145,23 @@ float Measurements::getSeaLevelPressure() {
     return sensor.getSeaLevelPressure();
 }
 
-float Measurements::getMinAltitude() {
+float Measurements::getMinAltitude() const {
     return minAltitude;
 }
 
-float Measurements::getMaxAltitude() {
+float Measurements::getMaxAltitude() const {
     return maxAltitude;
 }
 
-float Measurements::getAvgAltitude() {
+float Measurements::getAvgAltitude() const {
     return avgAltitude;
 }
 
-float Measurements::getTotalAscend() {
+float Measurements::getTotalAscend() const {
     return totalAscend;
 }
 
-float Measurements::getTotalDescend() {
+float Measurements::getTotalDescend() const {
     return totalDescend;
 }
 
@@ -179,7 +181,7 @@ void Measurements::setSeaLevelPressure(float newSeaLevelPressure) {
     save();
 }
 
-float Measurements::getFixedAltitude(float rawAltitude) {
+float Measurements::getFixedAltitude(float rawAltitude) const {
     if ((rawAltitude > altitude + 0.5f + ALTITUDE_HISTERESIS) ||
         (rawAltitude < altitude - 0.5f - ALTITUDE_HISTERESIS)) {
         return round(rawAltitude);

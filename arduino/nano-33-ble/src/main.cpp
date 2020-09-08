@@ -1,5 +1,6 @@
 #define DATA_SEND_INTERVAL 3000
 
+#include <Arduino.h>
 #include <BLEAdapter.h>
 #include <Measurements.h>
 
@@ -68,7 +69,8 @@ void writeAllMeasurements() {
     ble.seaLevelPressure()->writeValue(seaLevelPressure);
 }
 
-void updateAltitude(BLEDevice central, BLECharacteristic characteristic) {
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
+void updateAltitude(BLEDevice, BLECharacteristic) {
     float value = ble.altitude()->value();
     Serial.print("Updated altitude, written: ");
     Serial.println(value);
@@ -77,7 +79,8 @@ void updateAltitude(BLEDevice central, BLECharacteristic characteristic) {
     ble.seaLevelPressure()->writeValue(measurements.getSeaLevelPressure());
 }
 
-void updateSeaLevelPressure(BLEDevice central, BLECharacteristic characteristic) {
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
+void updateSeaLevelPressure(const BLEDevice, const BLECharacteristic) {
     float value = ble.seaLevelPressure()->value();
     Serial.print("Updated sea level pressure, written: ");
     Serial.println(value);
@@ -86,7 +89,8 @@ void updateSeaLevelPressure(BLEDevice central, BLECharacteristic characteristic)
     ble.seaLevelPressure()->writeValue(measurements.getSeaLevelPressure());
 }
 
-void resetData(BLEDevice central, BLECharacteristic characteristic) {
+// NOLINTNEXTLINE(performance-unnecessary-value-param)
+void resetData(BLEDevice, BLECharacteristic) {
     Serial.println("Data reset requested.");
     measurements.reset();
     writeAllMeasurements();

@@ -50,6 +50,6 @@ int EEPROM::write(uint8_t address, uint8_t *data, uint8_t size) {
     return size;
 }
 
-int EEPROM::getLastResult() {
+int EEPROM::getLastResult() const {
     return lastResult;
 }

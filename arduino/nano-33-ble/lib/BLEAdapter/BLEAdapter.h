@@ -58,10 +58,7 @@ public:
 
     void poll(unsigned long timeout);
 
-    void sync();
-
 private:
-    bool isConnected = false;
     BatteryLevelCharacteristic batteryLevelChar;
     BatteryReadingCharacteristic batteryReadingChar;
     BatteryReadingCharacteristic minBatteryReadingChar;
