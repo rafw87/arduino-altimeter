@@ -2,18 +2,22 @@ import { connect } from 'react-redux';
 import { AppState } from '../../store';
 import {
   resetMeasurementsClickAction,
-  selectResetMeasurementsClicks,
-  selectResetMeasurementsRemainedClicks,
+  selectResetMeasurementsState,
+  selectResetMeasurementsInProgress,
+  selectResetMeasurementsError,
+  resetMeasurementsConfirmAction,
 } from '../../store/measurements';
 import { ResetButtonPure, OwnProps, DispatchProps, StateProps } from './ResetButtonPure';
 
 export const mapStateToProps = (state: AppState) => ({
-  clicks: selectResetMeasurementsClicks(state),
-  remainedClicks: selectResetMeasurementsRemainedClicks(state),
+  state: selectResetMeasurementsState(state),
+  inProgress: selectResetMeasurementsInProgress(state),
+  error: selectResetMeasurementsError(state),
 });
 
 const mapDispatchToProps = {
-  resetClick: resetMeasurementsClickAction,
+  reset: resetMeasurementsClickAction,
+  confirm: resetMeasurementsConfirmAction,
 };
 
 export const ResetButton = connect<StateProps, DispatchProps, OwnProps, AppState>(

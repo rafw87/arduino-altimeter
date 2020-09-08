@@ -1,16 +1,17 @@
 import { combineEpics, Epic } from 'redux-observable';
-import { EMPTY, of } from 'rxjs';
-import { mergeMap, map, takeUntil, catchError, bufferTime } from 'rxjs/operators';
+import { of, timer } from 'rxjs';
+import { mergeMap, map, takeUntil, catchError } from 'rxjs/operators';
 import { BluetoothService } from '../../services';
 import { filterAction, ObservableService } from '../../utils';
 import { AppActions, AppState } from '../rootReducer';
 import {
   resetMeasurementsAction,
   resetMeasurementsClickAction,
-  resetMeasurementsClickTimeoutAction,
+  resetMeasurementsConfirmAction,
+  resetMeasurementsResetAction,
   saveMeasurementAction,
 } from './actions';
-import { RESET_CLICK_COUNT, RESET_CLICK_TIMEOUT } from './constants';
+import { FINAL_NOTIFICATION_TIMEOUT, RESET_CLICK_TIMEOUT } from './constants';
 
 export type MeasurementsEpicsDependencies = {
   bluetooth: ObservableService<BluetoothService>;
@@ -39,24 +40,42 @@ const resetMeasurementsClickEpic: Epic<
   AppActions,
   AppState,
   MeasurementsEpicsDependencies
-> = (
-  action$,
-  _, // store$
-  { bluetooth },
-) =>
+> = (action$) =>
   action$.pipe(
     filterAction(resetMeasurementsClickAction),
-    bufferTime(RESET_CLICK_TIMEOUT, null, RESET_CLICK_COUNT),
-    mergeMap((events) => {
-      if (events.length >= RESET_CLICK_COUNT) {
-        console.log('EVENTS', events);
-        return of(resetMeasurementsAction.request());
-      } else if (events.length > 0) {
-        console.log('EVENTS', events);
-        return of(resetMeasurementsClickTimeoutAction());
-      }
-      return EMPTY;
-    }),
+    mergeMap(() =>
+      timer(RESET_CLICK_TIMEOUT).pipe(
+        takeUntil(action$.pipe(filterAction(resetMeasurementsConfirmAction))),
+        map(() => resetMeasurementsResetAction()),
+      ),
+    ),
+  );
+
+const resetMeasurementsConfirmEpic: Epic<
+  AppActions,
+  AppActions,
+  AppState,
+  MeasurementsEpicsDependencies
+> = (action$) =>
+  action$.pipe(
+    filterAction(resetMeasurementsConfirmAction),
+    map(() => resetMeasurementsAction.request()),
+  );
+
+const resetMeasurementsFinishEpic: Epic<
+  AppActions,
+  AppActions,
+  AppState,
+  MeasurementsEpicsDependencies
+> = (action$) =>
+  action$.pipe(
+    filterAction([resetMeasurementsAction.success, resetMeasurementsAction.failure]),
+    mergeMap(() =>
+      timer(FINAL_NOTIFICATION_TIMEOUT).pipe(
+        takeUntil(action$.pipe(filterAction(resetMeasurementsClickAction))),
+        map(() => resetMeasurementsResetAction()),
+      ),
+    ),
   );
 
 const resetMeasurementsEpic: Epic<
@@ -82,5 +101,7 @@ const resetMeasurementsEpic: Epic<
 export const measurementsEpics = combineEpics(
   saveMeasurementEpic,
   resetMeasurementsClickEpic,
+  resetMeasurementsConfirmEpic,
+  resetMeasurementsFinishEpic,
   resetMeasurementsEpic,
 );

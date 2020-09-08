@@ -1,5 +1,11 @@
 import { Measurement } from '../../types';
 
+export enum ResetState {
+  Ready,
+  WaitingForConfirmation,
+  StatusNotification,
+}
+
 export type MeasurementState = {
   draftValue: number | null;
   requestedValue: number | null;
@@ -12,7 +18,7 @@ export type MeasurementsReducer = {
   measurements: {
     [key in Measurement]: MeasurementState;
   };
-  resetClicks: number;
+  resetState: ResetState;
   resetInProgress: boolean;
   resetError: Error | null;
 };

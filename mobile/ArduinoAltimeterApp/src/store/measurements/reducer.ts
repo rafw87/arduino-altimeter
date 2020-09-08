@@ -1,17 +1,18 @@
-import * as actions from './actions';
-import { Measurement } from '../../types';
-import { MeasurementsReducer, MeasurementState } from './types';
 import { ActionType, getType } from 'typesafe-actions';
+import { getKeys } from '../../utils';
+import { Measurement } from '../../types';
+import * as actions from './actions';
 import {
+  resetMeasurementsAction,
+  resetMeasurementsClickAction,
+  resetMeasurementsConfirmAction,
+  resetMeasurementsResetAction,
   saveMeasurementAction,
   setMeasurementEditModeAction,
-  updateMeasurementsAction,
   updateMeasurementDraftValueAction,
-  resetMeasurementsClickAction,
-  resetMeasurementsClickTimeoutAction,
-  resetMeasurementsAction,
+  updateMeasurementsAction,
 } from './actions';
-import { getKeys } from '../../utils';
+import { MeasurementsReducer, MeasurementState, ResetState } from './types';
 
 const measurementInitialState: MeasurementState = {
   draftValue: null,
@@ -35,7 +36,7 @@ export const measurementsReducerInitialState: MeasurementsReducer = {
     ascend: { ...measurementInitialState },
     descend: { ...measurementInitialState },
   },
-  resetClicks: 0,
+  resetState: ResetState.Ready,
   resetInProgress: false,
   resetError: null,
 };
@@ -104,18 +105,21 @@ export const measurementsReducer = (
     case getType(resetMeasurementsClickAction):
       return {
         ...state,
-        resetClicks: state.resetClicks + 1,
-        resetError: null,
+        resetState: ResetState.WaitingForConfirmation,
       };
-    case getType(resetMeasurementsClickTimeoutAction):
+    case getType(resetMeasurementsConfirmAction):
       return {
         ...state,
-        resetClicks: 0,
+        resetState: ResetState.StatusNotification,
+      };
+    case getType(resetMeasurementsResetAction):
+      return {
+        ...state,
+        resetState: ResetState.Ready,
       };
     case getType(resetMeasurementsAction.request):
       return {
         ...state,
-        resetClicks: 0,
         resetError: null,
         resetInProgress: true,
       };

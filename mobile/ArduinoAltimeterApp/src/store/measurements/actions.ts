@@ -45,9 +45,13 @@ export const resetMeasurementsClickAction = createAction('@MEASUREMENTS/RESET_ME
   undefined
 >();
 
-export const resetMeasurementsClickTimeoutAction = createAction(
-  '@MEASUREMENTS/RESET_MEASUREMENTS_CLICK_TIMEOUT',
+export const resetMeasurementsConfirmAction = createAction(
+  '@MEASUREMENTS/RESET_MEASUREMENTS_CONFIRM',
 )<undefined>();
+
+export const resetMeasurementsResetAction = createAction('@MEASUREMENTS/RESET_MEASUREMENTS_RESET')<
+  undefined
+>();
 
 export const resetMeasurementsAction = createAsyncAction(
   '@MEASUREMENTS/RESET_MEASUREMENTS_REQUEST',
