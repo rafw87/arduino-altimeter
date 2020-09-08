@@ -4,10 +4,13 @@
 #define EEPROM_SIGNATURE 0x12345678
 #define EEPROM_VERSION 0x0002
 
+#define EEPROM_HEADER_ADDRESS 0x00
+#define EEPROM_DATA_ADDRESS 0x08
+
 struct EEPROMHeader {
-    uint32_t signature;
-    uint16_t version;
-    uint16_t flags;
+    uint32_t signature = EEPROM_SIGNATURE;
+    uint16_t version = EEPROM_VERSION;
+    uint16_t flags = 0x0000;
 };
 
 struct EEPROMData {
@@ -54,7 +57,7 @@ void Measurements::save() {
             counter,
             getSeaLevelPressure()
     };
-    eeprom.write(0x08, data);
+    eeprom.write<EEPROMData>(EEPROM_DATA_ADDRESS, data);
     if (eeprom.getLastResult() > 0) {
         Serial.print("Cannot write to EEPROM: ");
         Serial.println(eeprom.getLastResult());
@@ -62,10 +65,12 @@ void Measurements::save() {
 }
 
 void Measurements::load() {
-    EEPROMHeader header = eeprom.read<EEPROMHeader>(0x00);
+    EEPROMHeader header;
+    eeprom.read<EEPROMHeader>(EEPROM_HEADER_ADDRESS, header);
     if (header.signature == EEPROM_SIGNATURE && header.version == EEPROM_VERSION) {
         Serial.println("EEPROM data found. Loading stored data...");
-        EEPROMData data = eeprom.read<EEPROMData>(0x08);
+        EEPROMData data{};
+        eeprom.read<EEPROMData>(EEPROM_DATA_ADDRESS, data);
         if (eeprom.getLastResult() > 0) {
             Serial.print("Cannot read from EEPROM: ");
             Serial.println(eeprom.getLastResult());
@@ -80,8 +85,8 @@ void Measurements::load() {
         setSeaLevelPressure(data.seaLevelPressure);
     } else {
         Serial.println("No EEPROM data found. Formatting EEPROM...");
-        EEPROMHeader newHeader = {EEPROM_SIGNATURE, EEPROM_VERSION, 0x0000};
-        eeprom.write(0x00, newHeader);
+        EEPROMHeader newHeader;
+        eeprom.write<EEPROMHeader>(EEPROM_HEADER_ADDRESS, newHeader);
         if (eeprom.getLastResult() > 0) {
             Serial.print("Cannot write header to EEPROM: ");
             Serial.println(eeprom.getLastResult());

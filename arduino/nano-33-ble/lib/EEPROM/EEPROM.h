@@ -16,11 +16,10 @@ public:
     int write(uint8_t address, uint8_t *data, uint8_t size);
 
     template<typename T>
-    T read(uint8_t address);
-
+    int read(uint8_t address, T &value);
 
     template<typename T>
-    void write(uint8_t address, T value);
+    int write(uint8_t address, const T &value);
 
     int getLastResult() const;
 
@@ -29,16 +28,15 @@ private:
 };
 
 template<typename T>
-T EEPROM::read(uint8_t address) {
-    T value;
-    memset(&value, 0, sizeof(value));
-    read(address, (uint8_t * ) & value, sizeof(value));
-    return value;
+int EEPROM::read(uint8_t address, T &value) {
+    read(address, (uint8_t *) &value, sizeof(value));
+    return lastResult;
 }
 
 template<typename T>
-void EEPROM::write(uint8_t address, T value) {
-    write(address, (uint8_t * ) & value, sizeof(value));
+int EEPROM::write(uint8_t address, const T &value) {
+    write(address, (uint8_t *) &value, sizeof(value));
+    return lastResult;
 }
 
 #endif //NANO_33_BLE_EEPROM_24AA01_H
