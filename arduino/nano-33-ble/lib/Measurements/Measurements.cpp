@@ -99,7 +99,6 @@ void Measurements::reset() {
     minBatteryReading = 0xffff;
     getBatteryReading();
 
-    sensor.resetSeaLevelPressure();
     float rawAltitude = sensor.getAltitude();
     altitude = getFixedAltitude(rawAltitude);
     minAltitude = altitude;
