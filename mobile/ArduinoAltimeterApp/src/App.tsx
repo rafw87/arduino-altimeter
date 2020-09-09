@@ -78,6 +78,13 @@ const App = () => {
               <MeasurementDisplay label="W górę" measurement={Measurement.ascend} unit="m" />
               <MeasurementDisplay label="W dół" measurement={Measurement.descend} unit="m" />
             </View>
+            <View style={styles.sectionContainerFlex}>
+              <MeasurementDisplay label="Bateria" measurement={Measurement.batteryLevel} unit="%" />
+              <MeasurementDisplay
+                label="Bateria (odczyt)"
+                measurement={Measurement.batteryReading}
+              />
+            </View>
             <ResetButton />
           </View>
         </ScrollView>

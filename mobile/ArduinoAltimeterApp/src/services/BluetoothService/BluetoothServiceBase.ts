@@ -31,6 +31,8 @@ export abstract class BluetoothServiceBase implements BluetoothService {
     avgAlt: null,
     ascend: null,
     descend: null,
+    batteryLevel: null,
+    batteryReading: null,
   };
   private changedMeasurements: Set<Measurement> = new Set<Measurement>();
   private statusSubscriptions: StatusSubscription[] = [];

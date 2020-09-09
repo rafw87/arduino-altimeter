@@ -16,6 +16,8 @@ const initialMeasurements: { [key in Measurement]: number } = {
   avgAlt: 801,
   ascend: 1911,
   descend: 1911,
+  batteryLevel: 65,
+  batteryReading: 700,
 };
 
 export class EmulatedBluetoothService extends BluetoothServiceBase implements BluetoothService {

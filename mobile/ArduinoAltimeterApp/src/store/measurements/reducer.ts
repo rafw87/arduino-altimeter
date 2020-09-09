@@ -35,6 +35,8 @@ export const measurementsReducerInitialState: MeasurementsReducer = {
     avgAlt: { ...measurementInitialState },
     ascend: { ...measurementInitialState },
     descend: { ...measurementInitialState },
+    [Measurement.batteryLevel]: { ...measurementInitialState },
+    [Measurement.batteryReading]: { ...measurementInitialState },
   },
   resetState: ResetState.Ready,
   resetInProgress: false,

@@ -10,6 +10,7 @@ import {
   NumericEncoder,
   Uint16Encoder,
   Uint32Encoder,
+  Uint8Encoder,
 } from '../../utils';
 
 const ENVIRONMENTAL_SERVICE_UUID = '0000181a-0000-1000-8000-00805f9b34fb';
@@ -27,12 +28,16 @@ const TOTAL_ASCEND_CHAR_UUID = '7f7f2a5c-e981-11ea-adc1-0242ac120002';
 const TOTAL_DESCEND_CHAR_UUID = '7f7f2c1e-e981-11ea-adc1-0242ac120002';
 const RESET_DATA_CHAR_UUID = '7f7f2cdc-e981-11ea-adc1-0242ac120002';
 
+const BATTERY_SERVICE_UUID = '0000180f-0000-1000-8000-00805f9b34fb';
+const BATTERY_LEVEL_CHAR_UUID = '00002a19-0000-1000-8000-00805f9b34fb';
+const BATTERY_READING_CHAR_UUID = '47f969cc-ed59-11ea-adc1-0242ac120002';
+
 const SERVICES = {
   [ENVIRONMENTAL_SERVICE_UUID]: {
     [TEMPERATURE_CHAR_UUID]: {
       measurement: Measurement.temperature,
       specification: {
-        octets: 4,
+        octets: 2,
         decimalExponent: -2,
         dataType: Int16Encoder,
       },
@@ -40,7 +45,7 @@ const SERVICES = {
     [HUMIDITY_CHAR_UUID]: {
       measurement: Measurement.humidity,
       specification: {
-        octets: 4,
+        octets: 2,
         decimalExponent: -2,
         dataType: Uint16Encoder,
       },
@@ -109,6 +114,24 @@ const SERVICES = {
         octets: 4,
         decimalExponent: -2,
         dataType: Uint32Encoder,
+      },
+    },
+  },
+  [BATTERY_SERVICE_UUID]: {
+    [BATTERY_LEVEL_CHAR_UUID]: {
+      measurement: Measurement.batteryLevel,
+      specification: {
+        octets: 1,
+        decimalExponent: 0,
+        dataType: Uint8Encoder,
+      },
+    },
+    [BATTERY_READING_CHAR_UUID]: {
+      measurement: Measurement.batteryReading,
+      specification: {
+        octets: 1,
+        decimalExponent: 0,
+        dataType: Uint16Encoder,
       },
     },
   },

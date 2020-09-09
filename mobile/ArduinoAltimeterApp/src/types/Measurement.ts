@@ -1,6 +1,8 @@
 import { getKeys } from '../utils';
 
 export enum Measurement {
+  batteryLevel = 'batteryLevel',
+  batteryReading = 'batteryReading',
   temperature = 'temperature',
   humidity = 'humidity',
   pressure = 'pressure',
