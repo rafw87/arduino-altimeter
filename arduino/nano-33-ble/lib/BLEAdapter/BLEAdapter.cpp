@@ -1,5 +1,7 @@
 #include "BLEAdapter.h"
 
+#define AUTORESTART_PIN 11
+
 BLEAdapter::BLEAdapter()
         : batteryLevelChar(BATTERY_LEVEL_CHAR, BLERead | BLENotify, 1, 0, 0),
           batteryReadingChar(BATTERY_READING_CHAR, BLERead | BLENotify, 1, 0, 0),
@@ -96,6 +98,11 @@ void BLEAdapter::init() {
         BLE.disconnect();
         BLE.stopAdvertise();
         BLE.advertise();
+        if (digitalRead(AUTORESTART_PIN) == LOW) {
+            Serial.println("Restarting device after disconnection...");
+            delay(10);
+            NVIC_SystemReset();
+        }
     });
 
     BLE.setLocalName("Arduino Altimeter");
