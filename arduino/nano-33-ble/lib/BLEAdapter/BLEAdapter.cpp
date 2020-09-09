@@ -2,6 +2,32 @@
 
 #define AUTORESTART_PIN 11
 
+enum LEDStatus {
+    Disconnected,
+    Connecting,
+    Connected
+};
+
+void setLEDStatus(LEDStatus color) {
+    switch(color) {
+        case Disconnected:
+            digitalWrite(LEDR, LOW);
+            digitalWrite(LEDG, HIGH);
+            digitalWrite(LEDB, HIGH);
+            break;
+        case Connecting:
+            digitalWrite(LEDR, LOW);
+            digitalWrite(LEDG, LOW);
+            digitalWrite(LEDB, HIGH);
+            break;
+        case Connected:
+            digitalWrite(LEDR, HIGH);
+            digitalWrite(LEDG, LOW);
+            digitalWrite(LEDB, HIGH);
+            break;
+    }
+}
+
 BLEAdapter::BLEAdapter()
         : batteryLevelChar(BATTERY_LEVEL_CHAR, BLERead | BLENotify, 1, 0, 0),
           batteryReadingChar(BATTERY_READING_CHAR, BLERead | BLENotify, 1, 0, 0),
@@ -81,15 +107,27 @@ ResetDataCharacteristic *BLEAdapter::resetData() {
 }
 
 void BLEAdapter::init() {
+    pinMode(AUTORESTART_PIN, INPUT_PULLUP);
+    pinMode(LEDR, OUTPUT);
+    pinMode(LEDG, OUTPUT);
+    pinMode(LEDB, OUTPUT);
+    setLEDStatus(Disconnected);
+
     while (!BLE.begin()) {
         Serial.println("starting BLE failed!");
         delay(1000);
     }
 
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
+    altitudeChar.setEventHandler(BLESubscribed, [](BLEDevice, BLECharacteristic) {
+        setLEDStatus(Connected);
+    });
+
+    // NOLINTNEXTLINE(performance-unnecessary-value-param)
     BLE.setEventHandler(BLEConnected, [](BLEDevice central) {
         Serial.print("Connected to central: ");
         Serial.println(central.address());
+        setLEDStatus(Connecting);
     });
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
     BLE.setEventHandler(BLEDisconnected, [](BLEDevice central) {
@@ -98,6 +136,7 @@ void BLEAdapter::init() {
         BLE.disconnect();
         BLE.stopAdvertise();
         BLE.advertise();
+        setLEDStatus(Disconnected);
         if (digitalRead(AUTORESTART_PIN) == LOW) {
             Serial.println("Restarting device after disconnection...");
             delay(10);
