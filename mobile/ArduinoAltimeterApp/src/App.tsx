@@ -20,7 +20,7 @@ const App = () => {
   return (
     <Provider store={store}>
       <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
+      <SafeAreaView style={styles.safeAreaView}>
         <ScrollView contentInsetAdjustmentBehavior="automatic" style={styles.scrollView}>
           <View style={styles.body}>
             <ConnectionStatusDisplay />
@@ -40,7 +40,7 @@ const App = () => {
                 fontSize="medium"
                 unit="hPa"
                 editable
-                decimalPlaces={2}
+                decimalPlaces={1}
               />
             </View>
             <View style={styles.sectionContainerFlex}>
@@ -85,29 +85,34 @@ const App = () => {
                 measurement={Measurement.batteryReading}
               />
             </View>
-            <ResetButton />
           </View>
         </ScrollView>
+        <View style={styles.footer}>
+          <ResetButton />
+        </View>
       </SafeAreaView>
     </Provider>
   );
 };
 
 const styles = StyleSheet.create({
-  scrollView: {
-    minHeight: '100%',
+  safeAreaView: {
+    flexDirection: 'column',
+    height: '100%',
   },
+  scrollView: {},
+  footer: {},
   engine: {
     position: 'absolute',
     right: 0,
   },
   body: {},
   sectionContainer: {
-    marginTop: 32,
+    marginTop: 20,
     paddingHorizontal: 24,
   },
   sectionContainerFlex: {
-    marginTop: 32,
+    marginTop: 20,
     paddingHorizontal: 24,
     flex: 1,
     flexDirection: 'row',
