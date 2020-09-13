@@ -7,6 +7,9 @@
 #define EEPROM_HEADER_ADDRESS 0x00
 #define EEPROM_DATA_ADDRESS 0x08
 
+#define BATTERY_READING_EMA_MULTIPLIER 0.2f
+#define ALTITUDE_EMA_MULTIPLIER 0.5f
+
 struct EEPROMHeader {
     uint32_t signature = EEPROM_SIGNATURE;
     uint16_t version = EEPROM_VERSION;
@@ -24,9 +27,14 @@ struct EEPROMData {
     float seaLevelPressure;
 };
 
+void EMA(float &currentValue, float newValue, float multiplier) {
+    currentValue = newValue * multiplier + currentValue * (1 - multiplier);
+}
+
 void Measurements::init() {
     pinMode(BATTERY_LEVEL, INPUT);
     sensor.init();
+    setInitialValues();
     if (!eeprom.init()) {
         Serial.print("Cannot initialize EEPROM: ");
         Serial.println(eeprom.getLastResult());
@@ -37,8 +45,9 @@ void Measurements::init() {
 }
 
 void Measurements::update() {
-    float rawAltitude = sensor.getAltitude();
-    float newAltitude = getFixedAltitude(rawAltitude);
+    EMA(batteryReading, getBatteryReading(), BATTERY_READING_EMA_MULTIPLIER);
+    EMA(rawAltitude, sensor.getAltitude(), ALTITUDE_EMA_MULTIPLIER);
+    float newAltitude = getFixedAltitude();
     totalAscend = totalAscend + max(0, newAltitude - altitude);
     totalDescend = totalDescend + max(0, altitude - newAltitude);
     altitude = newAltitude;
@@ -95,30 +104,33 @@ void Measurements::load() {
     }
 }
 
-void Measurements::reset() {
+void Measurements::setInitialValues() {
     minBatteryReading = 0xffff;
-    getBatteryReading();
+    batteryReading = getBatteryReading();
 
-    float rawAltitude = sensor.getAltitude();
-    altitude = getFixedAltitude(rawAltitude);
+    rawAltitude = sensor.getAltitude();
+    altitude = getFixedAltitude();
     minAltitude = altitude;
     maxAltitude = altitude;
     avgAltitude = altitude;
     totalAscend = 0;
     totalDescend = 0;
     counter = 1;
+}
+
+void Measurements::reset() {
+    setInitialValues();
     save();
 }
 
-uint8_t Measurements::getBatteryLevel() {
-    uint16_t batteryReading = getBatteryReading();
+uint8_t Measurements::getBatteryLevel() const {
     return (uint8_t) constrain(map(batteryReading, BATTERY_EMPTY_READING, BATTERY_FULL_READING, 0, 100), 0, 100);
 }
 
 uint16_t Measurements::getBatteryReading() {
-    auto batteryReading = (uint16_t) analogRead(BATTERY_LEVEL);
-    minBatteryReading = min(batteryReading, minBatteryReading);
-    return batteryReading;
+    auto reading = (uint16_t) analogRead(BATTERY_LEVEL);
+    minBatteryReading = min(reading, minBatteryReading);
+    return reading;
 }
 
 uint16_t Measurements::getMinBatteryReading() const {
@@ -171,21 +183,21 @@ float Measurements::getTotalDescend() const {
 
 void Measurements::setAltitude(float newAltitude) {
     sensor.setAltitude(newAltitude);
-    float rawAltitude = sensor.getAltitude();
-    altitude = getFixedAltitude(rawAltitude);
+    rawAltitude = sensor.getAltitude();
+    altitude = getFixedAltitude();
     recalculateMinMaxAvg();
     save();
 }
 
 void Measurements::setSeaLevelPressure(float newSeaLevelPressure) {
     sensor.setSeaLevelPressure(newSeaLevelPressure);
-    float rawAltitude = sensor.getAltitude();
-    altitude = getFixedAltitude(rawAltitude);
+    rawAltitude = sensor.getAltitude();
+    altitude = getFixedAltitude();
     recalculateMinMaxAvg();
     save();
 }
 
-float Measurements::getFixedAltitude(float rawAltitude) const {
+float Measurements::getFixedAltitude() const {
     if ((rawAltitude > altitude + 0.5f + ALTITUDE_HISTERESIS) ||
         (rawAltitude < altitude - 0.5f - ALTITUDE_HISTERESIS)) {
         return round(rawAltitude);

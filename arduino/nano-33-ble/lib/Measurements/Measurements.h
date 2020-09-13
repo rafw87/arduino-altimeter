@@ -16,7 +16,7 @@ public:
 
     void update();
 
-    uint8_t getBatteryLevel();
+    uint8_t getBatteryLevel() const;
 
     uint16_t getBatteryReading();
 
@@ -59,14 +59,18 @@ private:
     EEPROM eeprom;
     uint16_t minBatteryReading = 0xffff;
     float altitude = 0;
+    float rawAltitude = 0;
     float minAltitude = 0;
     float maxAltitude = 0;
     float avgAltitude = 0;
     float totalAscend = 0;
     float totalDescend = 0;
     uint32_t counter = 0;
+    float batteryReading = 0;
 
-    float getFixedAltitude(float rawAltitude) const;
+    float getFixedAltitude() const;
+
+    void setInitialValues();
 
     void recalculateMinMaxAvg();
 };
